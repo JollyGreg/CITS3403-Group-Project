@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Chess Board</title>
+    <script>
+    function dragstartHandler(ev) {
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+    }
+
+    function dragoverHandler(ev) {
+    ev.preventDefault();
+    }
+
+    function dropHandler(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text/plain");
+    ev.target.setData("text/plain", data);
+    }
+    </script>
+
+</head>
+<link rel="stylesheet" href="chessboard.css">
+<body>
+    <table>
+        <tr> <td class="axis">8</td> <td class="cb a8 w" draggable="true" ondragstart="dragstartHandler(event)" id="♜">♜</td> <td class="cb b8 b">♞</td> <td class="cb c8 w">♝</td> <td class="cb d8 b">♛</td> <td class="cb e8 w">♚</td> <td class="cb 8f b">♝</td> <td class="cb 8g w">♞</td> <td class="cb 8h b">♜</td> </tr>
+        <tr> <td class="axis">7</td> <td class="cb a7 b">♟</td> <td class="cb b7 w">♟</td> <td class="cb c7 b">♟</td> <td class="cb d7 w">♟</td> <td class="cb e7 b">♟</td> <td class="cb 7f w">♟</td> <td class="cb 7g b">♟</td> <td class="cb 7h w">♟</td> </tr>
+        <tr> <td class="axis">6</td> <td class="cb a6 w" ondrop="dropHandler(event)" ondragover="dragoverHandler(event)"></td> <td class="cb b6 b"></td> <td class="cb c6 w"></td> <td class="cb d6 b"></td> <td class="cb e6 w"></td> <td class="cb 6f b"></td> <td class="cb 6g w"></td> <td class="cb 6h b"></td> </tr>
+        <tr> <td class="axis">5</td> <td class="cb a5 b"></td> <td class="cb b5 w"></td> <td class="cb c5 b"></td> <td class="cb d5 w"></td> <td class="cb e5 b"></td> <td class="cb 5f w"></td> <td class="cb 5g b"></td> <td class="cb 5h w"></td> </tr>
+        <tr> <td class="axis">4</td> <td class="cb a4 w"></td> <td class="cb b4 b"></td> <td class="cb c4 w"></td> <td class="cb d4 b"></td> <td class="cb e4 w"></td> <td class="cb 4f b"></td> <td class="cb 4g w"></td> <td class="cb 4h b"></td> </tr>
+        <tr> <td class="axis">3</td> <td class="cb a3 b"></td> <td class="cb b3 w"></td> <td class="cb c3 b"></td> <td class="cb d3 w"></td> <td class="cb e3 b"></td> <td class="cb 3f w"></td> <td class="cb 3g b"></td> <td class="cb 3h w"></td> </tr>
+        <tr> <td class="axis">2</td> <td class="cb a2 w">♙</td> <td class="cb b2 b">♙</td> <td class="cb c2 w">♙</td> <td class="cb d2 b">♙</td> <td class="cb e2 w">♙</td> <td class="cb 2f b">♙</td> <td class="cb 2g w">♙</td> <td class="cb 2h b">♙</td> </tr>
+        <tr> <td class="axis">1</td> <td class="cb a1 b">♖</td> <td class="cb b1 w">♘</td> <td class="cb c1 b">♗</td> <td class="cb d1 w">♕</td> <td class="cb e1 b">♔</td> <td class="cb 1f w">♗</td> <td class="cb 1g b">♘</td> <td class="cb 1h w">♖</td> </tr>
+        
+        <th> <td class="axis">a</td> <td class="axis">b</td> <td class="axis">c</td> <td class="axis">d</td> 
+        <td class="axis">e</td> <td class="axis">f</td> <td class="axis">g</td> <td class="axis">h</td></th>
+    </table>
+</body>
+</html>
