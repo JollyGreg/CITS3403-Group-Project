@@ -1,0 +1,26 @@
+table {
+    border: 2px solid brown;
+    margin: auto;
+    width: 60vh;
+    height: 60vh; 
+}
+
+td {
+    border: 2px solid black;
+    text-align: center;
+}
+
+.axis {
+    background-color: brown;
+    color: white;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.w {
+    background-color: white;
+}
+
+.b {
+    background-color: gray;
+}
