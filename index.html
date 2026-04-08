@@ -240,6 +240,103 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* === Glassmorphism Modal Styles === */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    display: none; /* Initially hidden */
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.glass-modal {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+    width: 400px;
+    position: relative;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 
+                0 0 20px rgba(59, 130, 246, 0.2);
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-tabs span {
+    padding-bottom: 10px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.modal-tabs span.active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+.auth-form { display: none; }
+.auth-form.active { display: block; animation: fadeIn 0.4s ease; }
+
+.input-group { margin-bottom: 20px; }
+.input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: none; border: none;
+    color: var(--text-muted);
+    font-size: 24px; cursor: pointer;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
     </style>
 </head>
 <body>
@@ -249,7 +346,7 @@
             <span style="color: var(--text-main);">Chess</span> GamePlatform
         </div>
         <div class="auth-buttons">
-            <button class="btn-login">Login</button>
+            <button class="btn-login" onclick="toggleModal()">Login</button>
             <button class="btn-register">Register</button>
         </div>
     </nav>
@@ -352,6 +449,68 @@
         </aside>
 
     </main>
+    <div id="loginModal" class="modal-overlay">
+    <div class="glass-modal">
+        <button class="close-btn" onclick="toggleModal()">&times;</button>
+        
+        <div class="modal-tabs">
+            <span id="tab-login" class="active" onclick="switchTab('login')">Login</span>
+            <span id="tab-register" onclick="switchTab('register')">Register</span>
+        </div>
+
+        <form id="loginForm" class="auth-form active">
+            <div class="input-group">
+                <input type="text" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <input type="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="submit-btn">Sign In Now</button>
+        </form>
+
+        <form id="registerForm" class="auth-form">
+            <div class="input-group">
+                <input type="text" placeholder="Username" required>
+            </div>
+            <div class="input-group">
+                <input type="email" placeholder="Email Address" required>
+            </div>
+            <div class="input-group">
+                <input type="password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="submit-btn">Create Account</button>
+        </form>
+    </div>
+</div>
+<script>
+    function toggleModal() {
+        const modal = document.getElementById('loginModal');
+        if (modal.style.display === 'flex') {
+            modal.style.display = 'none';
+        } else {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function switchTab(type) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginTab = document.getElementById('tab-login');
+        const registerTab = document.getElementById('tab-register');
+
+        if (type === 'login') {
+            loginForm.classList.add('active');
+            registerForm.classList.remove('active');
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+        } else {
+            registerForm.classList.add('active');
+            loginForm.classList.remove('active');
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+        }
+    }
+</script>
 
 </body>
 </html>
