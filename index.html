@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess GamePlatform - Home</title>
+    <title>Chess Master - Home</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <style>
@@ -81,9 +83,6 @@
         }
 
         .main-layout {
-            display: grid;
-            grid-template-columns: 280px 1fr 320px;
-            gap: 24px;
             padding: 30px 5%;
             flex: 1;
         }
@@ -95,6 +94,7 @@
             border: 1px solid var(--border-color);
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             transition: transform 0.3s;
+            height: 100%;
         }
 
         .panel-title {
@@ -108,250 +108,303 @@
             align-items: center;
         }
 
-        .profile-card {
-            text-align: center;
-        }
-
+        .profile-card { text-align: center; }
+        
         .avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
+            width: 100px; height: 100px; border-radius: 50%;
             background: linear-gradient(135deg, var(--bg-panel-hover), var(--border-color));
             margin: 0 auto 15px auto;
             border: 3px solid var(--primary);
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
         }
-
-        .win-rate {
-            margin-top: 20px;
-            text-align: left;
-        }
-
+        
+        .win-rate { margin-top: 20px; text-align: left; }
+        
         .progress-bar-bg {
-            background-color: var(--bg-main);
-            height: 10px;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-top: 8px;
+            background-color: var(--bg-main); height: 10px;
+            border-radius: 5px; overflow: hidden; margin-top: 8px;
         }
-
+        
         .progress-fill {
             background: linear-gradient(90deg, var(--success), #34d399);
-            width: 68%;
-            height: 100%;
-            border-radius: 5px;
+            width: 68%; height: 100%; border-radius: 5px;
         }
-
+        
         .quick-match-btn {
-            width: 100%;
-            padding: 20px;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: white;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
+            width: 100%; padding: 20px; font-size: 1.5rem; font-weight: 800;
+            color: white; background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none; border-radius: 12px; cursor: pointer; text-transform: uppercase;
+            letter-spacing: 1px; transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
+            margin-bottom: 30px; position: relative; overflow: hidden;
         }
-
+        
         .quick-match-btn:hover {
             transform: scale(1.02) translateY(-2px);
             box-shadow: 0 15px 40px rgba(139, 92, 246, 0.5);
         }
-
-        .tournaments-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
+        
+        .tournaments-table { width: 100%; border-collapse: collapse; }
         .tournaments-table th, .tournaments-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color);
         }
-
         .tournaments-table th {
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
+            color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.85rem;
         }
-
-        .tournaments-table tr:hover {
-            background-color: rgba(255, 255, 255, 0.03);
-        }
-
+        .tournaments-table tr:hover { background-color: rgba(255, 255, 255, 0.03); }
+        
         .join-btn {
-            background-color: transparent;
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: 0.3s;
+            background-color: transparent; color: var(--primary);
+            border: 1px solid var(--primary); padding: 5px 10px;
+            border-radius: 6px; cursor: pointer; transition: 0.3s;
         }
-
-        .join-btn:hover {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .leaderboard-list {
-            list-style: none;
-        }
-
+        
+        .join-btn:hover { background-color: var(--primary); color: white; }
+        
+        .leaderboard-list { list-style: none; }
         .leaderboard-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
+            display: flex; align-items: center; padding: 12px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-
-        .rank-num {
-            font-weight: 800;
-            font-size: 1.2rem;
-            width: 30px;
-            color: var(--text-muted);
-        }
-
-        .rank-1 { color: #fbbf24; }
-        .rank-2 { color: #94a3b8; }
+        
+        .rank-num { font-weight: 800; font-size: 1.2rem; width: 30px; color: var(--text-muted); }
+        .rank-1 { color: #fbbf24; } 
+        .rank-2 { color: #94a3b8; } 
         .rank-3 { color: #b45309; }
+        
+        .player-info { flex-grow: 1; margin-left: 10px; }
+        .player-score { font-weight: 600; color: var(--accent); }
 
-        .player-info {
-            flex-grow: 1;
-            margin-left: 10px;
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 2000; animation: fadeIn 0.3s ease;
         }
-
-        .player-score {
-            font-weight: 600;
-            color: var(--accent);
+        
+        .glass-modal {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px;
+            padding: 40px; width: 400px; position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.2);
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        @media (max-width: 1024px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
+        
+        .modal-tabs {
+            display: flex; justify-content: space-around; margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
+        
+        .modal-tabs span {
+            padding-bottom: 10px; cursor: pointer; color: var(--text-muted);
+            font-weight: 600; transition: 0.3s;
+        }
+        
+        .modal-tabs span.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+        
+        .auth-form { display: none; }
+        .auth-form.active { display: block; animation: fadeIn 0.4s ease; }
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group input {
+            width: 100%; padding: 12px 16px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: white;
+            outline: none; transition: 0.3s;
+        }
+        
+        .input-group input:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.1); }
+        
+        .submit-btn {
+            width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4); }
+        
+        .close-btn {
+            position: absolute; top: 20px; right: 20px; background: none; border: none;
+            color: var(--text-muted); font-size: 24px; cursor: pointer;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <nav>
         <div class="logo">
-            <span style="color: var(--text-main);">Chess</span> GamePlatform
+            <span style="color: var(--text-main);">Chess</span> Master
         </div>
         <div class="auth-buttons">
-            <button class="btn-login">Login</button>
-            <button class="btn-register">Register</button>
+            <button class="btn-login" onclick="toggleModal(); switchTab('login')">Login</button>
+            <button class="btn-register" onclick="toggleModal(); switchTab('register')">Register</button>
         </div>
     </nav>
 
-    <main class="main-layout">
+    <main class="main-layout container-fluid">
+        <div class="row g-4">
+            
+            <div class="col-12 col-lg-3">
+                <aside class="panel">
+                    <div class="profile-card">
+                        <div class="avatar"></div>
+                        <h2>Guest Player</h2>
+                        <p class="text-muted" style="color: var(--text-muted);">Unranked</p>
+                    </div>
+                    
+                    <div class="win-rate">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Win Rate</span>
+                            <span style="color: var(--success); font-weight: bold;">68%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">142</span></p>
+                    </div>
+                </aside>
+            </div>
 
-        <aside class="panel">
-            <div class="profile-card">
-                <div class="avatar"></div>
-                <h2>Guest Player</h2>
-                <p class="text-muted" style="color: var(--text-muted);">Unranked</p >
+            <div class="col-12 col-lg-6">
+                <section class="panel">
+                    <button class="quick-match-btn" onclick="location.href='chessboard.html'">⚡ 1v1 Quick Match</button>
+                    
+                    <div class="panel-title">Recent Championships</div>
+                    <div style="overflow-x: auto;">
+                        <table class="tournaments-table">
+                            <thead>
+                                <tr>
+                                    <th>Tournament Name</th>
+                                    <th>Entry</th>
+                                    <th>Players</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Spring Cup 2026</strong></td>
+                                    <td>Free</td>
+                                    <td>32/64</td>
+                                    <td><button class="join-btn">Join</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Beginner's Arena</strong></td>
+                                    <td>Free</td>
+                                    <td>12/128</td>
+                                    <td><button class="join-btn">Join</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-12 col-lg-3">
+                <aside class="panel">
+                    <div class="panel-title">Global Leaderboard</div>
+                    <ul class="leaderboard-list">
+                        <li class="leaderboard-item">
+                            <div class="rank-num rank-1">1</div>
+                            <div class="player-info">User1</div>
+                            <div class="player-score">2882</div>
+                        </li>
+                        <li class="leaderboard-item">
+                            <div class="rank-num rank-2">2</div>
+                            <div class="player-info">User2</div>
+                            <div class="player-score">2789</div>
+                        </li>
+                        <li class="leaderboard-item">
+                            <div class="rank-num rank-3">3</div>
+                            <div class="player-info">User3</div>
+                            <div class="player-score">2780</div>
+                        </li>
+                        <li class="leaderboard-item">
+                            <div class="rank-num">4</div>
+                            <div class="player-info">User4</div>
+                            <div class="player-score">2773</div>
+                        </li>
+                        <li class="leaderboard-item">
+                            <div class="rank-num">5</div>
+                            <div class="player-info">User5</div>
+                            <div class="player-score">2760</div>
+                        </li>
+                    </ul>
+                </aside>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="loginModal" class="modal-overlay">
+        <div class="glass-modal">
+            <button class="close-btn" onclick="toggleModal()">&times;</button>
+            
+            <div class="modal-tabs">
+                <span id="tab-login" class="active" onclick="switchTab('login')">Login</span>
+                <span id="tab-register" onclick="switchTab('register')">Register</span>
             </div>
             
-            <div class="win-rate">
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Win Rate</span>
-                    <span style="color: var(--success); font-weight: bold;">68%</span>
+            <form id="loginForm" class="auth-form active">
+                <div class="input-group">
+                    <input type="text" placeholder="Username" required>
                 </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-fill"></div>
+                <div class="input-group">
+                    <input type="password" placeholder="Password" required>
                 </div>
-            </div>
+                <button type="submit" class="submit-btn">Sign In</button>
+            </form>
+            
+            <form id="registerForm" class="auth-form">
+                <div class="input-group">
+                    <input type="text" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="submit-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
 
-            <div style="margin-top: 20px;">
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">142</span></p >
-            </div>
-        </aside>
+    <script>
+        function toggleModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            } else {
+                modal.style.display = 'flex';
+            }
+        }
 
-        <section class="panel">
-            <button class="quick-match-btn" onclick="location.href='chessboard.html'">⚡ 1v1 Quick Match</button>
+        function switchTab(type) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const loginTab = document.getElementById('tab-login');
+            const registerTab = document.getElementById('tab-register');
 
-            <div class="panel-title">
-                Recent Championships
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="tournaments-table">
-                    <thead>
-                        <tr>
-                            <th>Tournament Name</th>
-                            <th>Entry</th>
-                            <th>Players</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Spring Cup 2026</strong></td>
-                            <td>Free</td>
-                            <td>32/64</td>
-                            <td><button class="join-btn">Join</button></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Pro League Weekly</strong></td>
-                            <td>Invited</td>
-                            <td>16/16</td>
-                            <td><span style="color: var(--text-muted);">Full</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Beginner's Arena</strong></td>
-                            <td>Free</td>
-                            <td>12/128</td>
-                            <td><button class="join-btn">Join</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <aside class="panel">
-            <div class="panel-title">
-                Global Leaderboard
-            </div>
-            <ul class="leaderboard-list">
-                <li class="leaderboard-item">
-                    <div class="rank-num rank-1">1</div>
-                    <div class="player-info">Magnus C.</div>
-                    <div class="player-score">2882</div>
-                </li>
-                <li class="leaderboard-item">
-                    <div class="rank-num rank-2">2</div>
-                    <div class="player-info">Hikaru N.</div>
-                    <div class="player-score">2789</div>
-                </li>
-                <li class="leaderboard-item">
-                    <div class="rank-num rank-3">3</div>
-                    <div class="player-info">Ding L.</div>
-                    <div class="player-score">2780</div>
-                </li>
-                <li class="leaderboard-item">
-                    <div class="rank-num">4</div>
-                    <div class="player-info">Ian N.</div>
-                    <div class="player-score">2773</div>
-                </li>
-                <li class="leaderboard-item">
-                    <div class="rank-num">5</div>
-                    <div class="player-info">Alireza F.</div>
-                    <div class="player-score">2760</div>
-                </li>
-            </ul>
-        </aside>
-
-    </main>
+            if (type === 'login') {
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+            } else {
+                registerForm.classList.add('active');
+                loginForm.classList.remove('active');
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
