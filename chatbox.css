@@ -1,0 +1,112 @@
+/*the outer wrapper for the entire chat box*/
+.chat-panel {
+    background-color: darkgray;
+    border: 1px solid gray;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+    width: 320px;
+}
+
+/*the top bar that shows the chat title and the openetns status*/
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid gray;
+    font-weight: 600;
+    font-size: 1rem;
+    color: white;
+}
+
+/*the opeenent is connected in the header*/
+.chat-status {
+    font-size: 0.75rem;
+    color: green;
+    font-weight: 400;
+}
+
+/*the scrollable area where the messages appear*/
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/*the individual message bubbles*/
+.message {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+/*messages sent by the user are aligned to the right*/
+.message.sent {
+    background-color: cornflowerblue;
+    color: white;
+    align-self: flex-end;
+}
+
+/*messages received by oppenent are aligned to the left*/
+.message.received {
+    background-color: gray;
+    color: white;
+    align-self: flex-start;
+}
+
+/*senders name above each of the chats*/
+.message-sender {
+    font-size: 0.75rem;
+    color: lightgray;
+    margin-bottom: 3px;
+}
+
+/*a row that has the text input and the send button*/
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid gray;
+}
+
+/*the texts input*/
+.chat-input-row input {
+    flex: 1;
+    background-color: black;
+    border: 1px solid gray;
+    border-radius: 8px;
+    color: white;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    outline: none;
+}
+
+/*highlights the input when clicked into*/
+#chatInput:focus {
+    border-color: cornflowerblue;
+}
+
+/*the send button*/
+.chat-input-row button {
+    background-color: cornflowerblue;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+/*send button chnages colour when hovered*/
+.chat-input-row button:hover {
+    background-color: purple;
+}
