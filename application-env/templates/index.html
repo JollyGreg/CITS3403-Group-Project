@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Master - Home</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <nav>
+        <div class="logo">
+            <span style="color: var(--text-main);">Chess</span> Master
+        </div>
+        <div class="auth-buttons">
+            <button class="btn-login" onclick="toggleModal(); switchTab('login')">Login</button>
+            <button class="btn-register" onclick="toggleModal(); switchTab('register')">Register</button>
+        </div>
+    </nav>
+
+    <main class="main-layout container-fluid">
+        <div class="row g-4">
+            
+            <div class="col-12 col-lg-3">
+                <aside class="panel">
+                    <div class="profile-card" onclick="location.href='profile.html'" style="cursor: pointer;">
+                        <div class="avatar"></div>
+                        <h2>Guest Player</h2>
+                        <p class="text-muted" style="color: var(--text-muted);">Unranked</p>
+                    </div>
+                    
+                    <div class="win-rate">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Win Rate</span>
+                            <span style="color: var(--success); font-weight: bold;">68%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">142</span></p>
+                    </div>
+                </aside>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <section class="panel">
+                    <button class="quick-match-btn" onclick="location.href='/play'">⚡ 1v1 Quick Match</button>
+                    
+                    <div class="panel-title">Recent Championships</div>
+                    <div style="overflow-x: auto;">
+                        <table class="tournaments-table">
+                            <thead>
+                                <tr>
+                                    <th>Tournament Name</th>
+                                    <th>Entry</th>
+                                    <th>Players</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Spring Cup 2026</strong></td>
+                                    <td>Free</td>
+                                    <td>32/64</td>
+                                    <td><button class="join-btn">Join</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Beginner's Arena</strong></td>
+                                    <td>Free</td>
+                                    <td>12/128</td>
+                                    <td><button class="join-btn">Join</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-12 col-lg-3">
+                <aside class="panel">
+                    <div class="panel-title">Global Leaderboard</div>
+                    <ul class="leaderboard-list">
+                        <li class="leaderboard-item">
+                            <div class="rank-num rank-1">1</div>
+                            <div class="player-info">User1</div>
+                            <div class="player-score">2882</div>
+                        </li>
+                        <li class="leaderboard-item">
+                            <div class="rank-num rank-2">2</div>
+                            <div class="player-info">User2</div>
+                            <div class="player-score">2789</div>
+                        </li>
+                        <li class="leaderboard-item">
+                            <div class="rank-num rank-3">3</div>
+                            <div class="player-info">User3</div>
+                            <div class="player-score">2780</div>
+                        </li>
+                        <li class="leaderboard-item">
+                            <div class="rank-num">4</div>
+                            <div class="player-info">User4</div>
+                            <div class="player-score">2773</div>
+                        </li>
+                        <li class="leaderboard-item">
+                            <div class="rank-num">5</div>
+                            <div class="player-info">User5</div>
+                            <div class="player-score">2760</div>
+                        </li>
+                    </ul>
+                </aside>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="loginModal" class="modal-overlay">
+        <div class="glass-modal">
+            <button class="close-btn" onclick="toggleModal()">&times;</button>
+            
+            <div class="modal-tabs">
+                <span id="tab-login" class="active" onclick="switchTab('login')">Login</span>
+                <span id="tab-register" onclick="switchTab('register')">Register</span>
+            </div>
+            
+            <form id="loginForm" class="auth-form active">
+                <div class="input-group">
+                    <input type="text" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="submit-btn">Sign In</button>
+            </form>
+            
+            <form id="registerForm" class="auth-form">
+                <div class="input-group">
+                    <input type="text" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="submit-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
