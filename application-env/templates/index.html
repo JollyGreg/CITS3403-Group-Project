@@ -281,8 +281,13 @@
             <span style="color: var(--text-main);">Chess</span> Master
         </div>
         <div class="auth-buttons">
-            <button class="btn-login" onclick="toggleModal(); switchTab('login')">Login</button>
-            <button class="btn-register" onclick="toggleModal(); switchTab('register')">Register</button>
+            {% if current_user.is_authenticated %}
+                <button class="btn-register" onclick="location.href='{{ url_for('profile') }}'">{{ current_user.username }}</button>
+                <button class="btn-login" onclick="location.href='{{ url_for('logout') }}'">Logout</button>
+            {% else %}
+                <button class="btn-login" onclick="toggleModal(); switchTab('login')">Login</button>
+                <button class="btn-register" onclick="toggleModal(); switchTab('register')">Register</button>
+            {% endif %}
         </div>
     </nav>
 
@@ -293,23 +298,46 @@
                 <aside class="panel">
                     <div class="profile-card">
                         <div class="avatar"></div>
-                        <h2>Guest Player</h2>
-                        <p class="text-muted" style="color: var(--text-muted);">Unranked</p>
+                        {% if current_user.is_authenticated %}
+                            <h2>{{ current_user.username }}</h2>
+                            <p class="text-muted" style="color: var(--text-muted);">Player ID: {{ current_user.id }}</p>
+                        {% else %}
+                            <h2>Guest Player</h2>
+                            <p class="text-muted" style="color: var(--text-muted);">Unranked</p>
+                        {% endif %}
                     </div>
                     
-                    <div class="win-rate">
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>Win Rate</span>
-                            <span style="color: var(--success); font-weight: bold;">68%</span>
+                    {% if current_user.is_authenticated %}
+                        <div class="win-rate">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Win Rate</span>
+                                <span style="color: var(--success); font-weight: bold;">
+                                    {{ current_user.win_rate | default(0) }}%
+                                </span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-fill" style="width: {{ current_user.win_rate | default(0) }}%;"></div>
+                            </div>
                         </div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-fill"></div>
+                        
+                        <div style="margin-top: 20px;">
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">{{ current_user.matches_played | default(0) }}</span></p>
                         </div>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">142</span></p>
-                    </div>
+                    {% else %}
+                        <div class="win-rate">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Win Rate</span>
+                                <span style="color: var(--text-muted); font-weight: bold;">0%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-fill" style="width: 0%; background: var(--border-color);"></div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">0</span></p>
+                        </div>
+                    {% endif %}
                 </aside>
             </div>
 
@@ -392,25 +420,25 @@
                 <span id="tab-register" onclick="switchTab('register')">Register</span>
             </div>
 
-            <form id="loginForm" class="auth-form active">
-                <div class="input-group">
-                    <input type="text" placeholder="Username" required>
+            <form id="loginForm" class="auth-form active" method="POST" action="{{ url_for('login') }}">
+                {{ login_form.hidden_tag() }}  <div class="input-group">
+                    <input type="text" name="username" placeholder="Username" required>
                 </div>
                 <div class="input-group">
-                    <input type="password" placeholder="Password" required>
+                    <input type="password" name="password" placeholder="Password" required>
                 </div>
                 <button type="submit" class="submit-btn">Sign In Now</button>
             </form>
 
-            <form id="registerForm" class="auth-form">
-                <div class="input-group">
-                    <input type="text" placeholder="Username" required>
+            <form id="registerForm" class="auth-form" method="POST" action="{{ url_for('register') }}">
+                {{ register_form.hidden_tag() }} <div class="input-group">
+                    <input type="text" name="username" placeholder="Username" required>
                 </div>
                 <div class="input-group">
-                    <input type="email" placeholder="Email Address" required>
+                    <input type="email" name="email" placeholder="Email Address" required>
                 </div>
                 <div class="input-group">
-                    <input type="password" placeholder="Password" required>
+                    <input type="password" name="password" placeholder="Password" required>
                 </div>
                 <button type="submit" class="submit-btn">Create Account</button>
             </form>
