@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Project - My Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Color variables for dark theme */
+        :root {
+            --bg-main: #0f172a;
+            --bg-panel: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border-color: #334155;
+        }
+
+        /* Basic reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* Navbar styles */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Main container layout */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 30px 5%;
+        }
+
+        /* Panel base styles - Increased max-width to make it larger */
+        .panel {
+            width: 100%;
+            max-width: 900px; /* Made it wider here */
+            background-color: var(--bg-panel);
+            border-radius: 12px;
+            padding: 35px 40px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Top Panel: Vertical stack layout */
+        .top-panel {
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #334155;
+            margin: 0 auto 15px;
+            border: 2px solid var(--primary);
+        }
+
+        .user-details h2 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .user-details p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        .btn-edit {
+            width: 100%;
+            max-width: 300px;
+            padding: 10px 16px;
+            margin: 0 auto 25px auto;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            transition: 0.3s;
+            display: block;
+        }
+
+        .btn-edit:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Stats section with top divider */
+        .stats-box {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stat-item h3 {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-item p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Bottom Panel: Table styles */
+        .bottom-panel h3 {
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* Increased padding to make table rows taller and visually larger */
+        .history-table th, .history-table td {
+            padding: 18px 10px; 
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .history-table th {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .history-table td {
+            font-size: 1rem;
+        }
+
+        /* Result tags */
+        .res-tag {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: transparent;
+        }
+
+        .win { color: var(--success); border: 1px solid var(--success); }
+        .loss { color: var(--danger); border: 1px solid var(--danger); }
+        .draw { color: var(--warning); border: 1px solid var(--warning); }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo" onclick="location.href='index.html'">Chess Master</div>
+        <button class="btn-back" onclick="location.href='index.html'">Back to Home</button>
+    </nav>
+
+    <div class="container">
+        
+        <div class="panel top-panel">
+            <div class="profile-avatar"></div>
+            
+            <div class="user-details">
+                <h2>Guest Player</h2>
+                <p>Player Account: 24183532</p>
+            </div>
+            
+            <button class="btn-edit">Edit Profile</button>
+
+            <div class="stats-box">
+                <div class="stat-item">
+                    <h3>142</h3>
+                    <p>Matches</p>
+                </div>
+                <div class="stat-item">
+                    <h3>68%</h3>
+                    <p>Win Rate</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel bottom-panel">
+            <h3>Recent Match History</h3>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Opponent</th>
+                        <th>Game Mode</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2026-04-28</td>
+                        <td>User1</td>
+                        <td>Quick Match</td>
+                        <td><span class="res-tag win">Victory</span></td>
+                    </tr>
+                    <tr>
+                        <td>2026-04-27</td>
+                        <td>User2</td>
+                        <td>Tournament</td>
+                        <td><span class="res-tag loss">Defeat</span></td>
+                    </tr>
+                    <tr>
+                        <td>2026-04-25</td>
+                        <td>User3</td>
+                        <td>Quick Match</td>
+                        <td><span class="res-tag draw">Draw</span></td>
+                    </tr>
+                    <tr>
+                        <td>2026-04-24</td>
+                        <td>User4</td>
+                        <td>Quick Match</td>
+                        <td><span class="res-tag win">Victory</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>
