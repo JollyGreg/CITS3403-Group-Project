@@ -25,12 +25,6 @@ td {
     font-weight: bold;
     text-align: center;
     padding: 8px;
-table {
-    border: 8px solid #2d5016;
-    margin: 0 auto;
-    width: 600px;
-    height: 600px;
-    border-collapse: collapse;
 }
 
 td {
