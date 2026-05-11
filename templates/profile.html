@@ -194,8 +194,8 @@
 <body>
 
     <nav>
-        <div class="logo" onclick="location.href='index.html'">Chess Master</div>
-        <button class="btn-back" onclick="location.href='index.html'">Back to Home</button>
+        <div class="logo" onclick="location.href='{{ url_for('index') }}'">Chess Master</div>
+        <button class="btn-back" onclick="location.href='{{ url_for('index') }}'">Back to Home</button>
     </nav>
 
     <div class="container">
@@ -204,19 +204,19 @@
             <div class="profile-avatar"></div>
             
             <div class="user-details">
-                <h2>Guest Player</h2>
-                <p>Player Account: 24183532</p>
+                <h2>{{ current_user.username }}</h2>
+                <p>Player Account: ID-{{ current_user.id }}</p>
             </div>
             
             <button class="btn-edit">Edit Profile</button>
 
             <div class="stats-box">
                 <div class="stat-item">
-                    <h3>142</h3>
+                    <h3>{{ current_user.matches_played | default(0) }}</h3>
                     <p>Matches</p>
                 </div>
                 <div class="stat-item">
-                    <h3>68%</h3>
+                    <h3>{{ current_user.win_rate | default(0) }}%</h3>
                     <p>Win Rate</p>
                 </div>
             </div>
@@ -234,30 +234,28 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for match in recent_matches %}
                     <tr>
-                        <td>2026-04-28</td>
-                        <td>User1</td>
-                        <td>Quick Match</td>
-                        <td><span class="res-tag win">Victory</span></td>
+                        <td>{{ match.date }}</td>
+                        <td>{{ match.opponent_name }}</td>
+                        <td>{{ match.mode }}</td>
+                        <td>
+                            {% if match.result == 'Victory' %}
+                                <span class="res-tag win">Victory</span>
+                            {% elif match.result == 'Defeat' %}
+                                <span class="res-tag loss">Defeat</span>
+                            {% else %}
+                                <span class="res-tag draw">Draw</span>
+                            {% endif %}
+                        </td>
                     </tr>
+                    {% else %}
                     <tr>
-                        <td>2026-04-27</td>
-                        <td>User2</td>
-                        <td>Tournament</td>
-                        <td><span class="res-tag loss">Defeat</span></td>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            No match history available yet. Go play a game!
+                        </td>
                     </tr>
-                    <tr>
-                        <td>2026-04-25</td>
-                        <td>User3</td>
-                        <td>Quick Match</td>
-                        <td><span class="res-tag draw">Draw</span></td>
-                    </tr>
-                    <tr>
-                        <td>2026-04-24</td>
-                        <td>User4</td>
-                        <td>Quick Match</td>
-                        <td><span class="res-tag win">Victory</span></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
