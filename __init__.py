@@ -44,7 +44,7 @@ def logout():
 @app.route("/profile")
 def profile():
     # Placeholder - implement profile page
-    return render_template("index.html", current_user=current_user)
+    return render_template("profile.html", current_user=current_user)
 
 if __name__ == '__main__':
     app.run()
