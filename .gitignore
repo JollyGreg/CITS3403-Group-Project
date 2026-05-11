@@ -2,6 +2,7 @@
 venv/
 env/
 application-env/
+.github/
 
 __pycache__/
 *.pyc
