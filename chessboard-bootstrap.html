@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Board - Bootstrap Version</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Existing project files -->
+    <link rel="stylesheet" href="../chessboard.css">
+    <script src="../chessboard.js"></script>
+</head>
+<body class="bg-light">
+
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h1 class="mb-0">Chess Board</h1>
+            <a href="../index.html" class="btn btn-dark">Back to Home</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-center">
+                    <table id="ChessTable">
+
+                        <tr><th class="axis">8</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="axis">7</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="axis">6</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="axis">5</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="axis">4</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="axis">3</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="axis">2</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><th class="axis">1</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+                        <tr>
+                            <th class="axis"></th>
+                            <th class="axis">a</th>
+                            <th class="axis">b</th>
+                            <th class="axis">c</th>
+                            <th class="axis">d</th>
+                            <th class="axis">e</th>
+                            <th class="axis">f</th>
+                            <th class="axis">g</th>
+                            <th class="axis">h</th>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
