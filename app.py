@@ -44,7 +44,7 @@ def create_app():
                                login_form=login_form, 
                                register_form=register_form)
 
-    @app.route("/login", methods=['POST'])
+    @app.route("/login", methods=['GET', 'POST'])
     def login():
         form = LoginForm()
         # validate_on_submit handles CSRF token check and form validation
