@@ -1,13 +1,13 @@
 import os
 import sys
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
 
 # Ensure the current directory is in the path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from models import db, User, Match
+from models import db, User, Match, Message
 from forms import LoginForm, RegisterForm
 
 load_dotenv()
@@ -106,6 +106,27 @@ def create_app():
         # TODO: Query recent matches from the database to pass to the template
         # recent_matches = Match.query.filter_by(...) 
         return render_template("profile.html", current_user=current_user)
+
+    @app.route('/api/messages', methods=['GET'])
+    @login_required
+    def get_messages():
+        # Fetch the 50 most recent messages ordered by time
+        messages = Message.query.order_by(Message.timestamp.asc()).limit(50).all()
+        return jsonify([{
+            'sender': m.sender.username,
+            'content': m.content,
+            'timestamp': m.timestamp.strftime('%H:%M')
+        } for m in messages])
+
+    @app.route('/api/messages', methods=['POST'])
+    @login_required
+    def send_message():
+        # Save a new message from the current user to the database
+        data = request.get_json()
+        msg = Message(sender_id=current_user.id, content=data['content'])
+        db.session.add(msg)
+        db.session.commit()
+        return jsonify({'success': True})
 
     return app
 

@@ -8,14 +8,14 @@ function scrollToBottom() {
 }
 
 //creates and displays the message bubble with the senders name above it
-function addMessage(text, type, sender) {
+function addMessage(text, sender, isSelf) {
     const wrapper = document.createElement('div');
     const senderLabel = document.createElement('div');
     senderLabel.classList.add('message-sender');
     senderLabel.textContent = sender;
     const bubble = document.createElement('div');
     //changes colour and alignment dependent on message being sent or recieved 
-    bubble.classList.add('message', type);
+    bubble.classList.add('message', isSelf ? 'sent' : 'received');
     bubble.textContent = text;
     wrapper.appendChild(senderLabel);
     wrapper.appendChild(bubble);
@@ -23,22 +23,46 @@ function addMessage(text, type, sender) {
     scrollToBottom();
 }
 
+//fetches messages from the server and displays them
+function pollMessages() {
+    fetch('/api/messages')
+        .then(r => r.json())
+        .then(messages => {
+            chatMessages.innerHTML = '';
+            messages.forEach(m => {
+                const isSelf = m.sender === currentUsername;
+                addMessage(m.content, m.sender, isSelf);
+            });
+        })
+        .catch(err => console.log('Poll error:', err));
+}
+
 //when the user sends a message
 function sendMessage() {
     const text = chatInput.value;
     //will stop if the input of the user is empty
     if (!text) return;
-    addMessage(text, 'sent', 'You');
     //will clear the input field after message sent
     chatInput.value = '';
-    //will replace but just to see it work, will say "message recieved" after a second
-    setTimeout(() => {
-        addMessage('message received', 'received', 'Opponent');
-    }, 1000);
+    //sends the message to the server to be stored in the database
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: text })
+    })
+    .then(r => r.json())
+    .then(() => pollMessages())
+    .catch(err => console.log('Send error:', err));
 }
 
 sendButton.addEventListener('click', sendMessage);
 
 chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') sendMessage();
+});
+
+//start polling for new messages every 2 seconds when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    pollMessages();
+    setInterval(pollMessages, 2000);
 });
