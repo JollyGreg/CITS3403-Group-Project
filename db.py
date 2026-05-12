@@ -1,5 +1,6 @@
 """Database initialization and management utilities"""
-from __init__ import app, db, User
+from app import app
+from models import db, User
 import os
 
 def init_db():
