@@ -11,6 +11,17 @@
 </head>
 <body>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <nav>
         <div class="logo">
             <span style="color: var(--text-main);">Chess</span> Master
@@ -30,7 +41,7 @@
         <div class="row g-4">
             
             <div class="col-12 col-lg-3">
-                <aside class="panel" onclick="location.href='/profile'">
+                <aside class="panel" {% if current_user.is_authenticated %}onclick="location.href='{{ url_for('profile') }}'"{% endif %}>
                     <div class="profile-card">
                         <div class="avatar"></div>
                         {% if current_user.is_authenticated %}
@@ -78,7 +89,11 @@
 
             <div class="col-12 col-lg-6">
                 <section class="panel">
-                    <button class="quick-match-btn" onclick="location.href='/play'">⚡ 1v1 Quick Match</button>
+                    {% if current_user.is_authenticated %}
+                        <button class="quick-match-btn" onclick="location.href='{{ url_for('play') }}'">⚡ 1v1 Quick Match</button>
+                    {% else %}
+                        <button class="quick-match-btn" onclick="toggleModal(); switchTab('login')">⚡ 1v1 Quick Match</button>
+                    {% endif %}
                     
                     <div class="panel-title">Recent Championships</div>
                     <div style="overflow-x: auto;">
@@ -174,6 +189,9 @@
                 </div>
                 <div class="input-group">
                     <input type="password" name="password" placeholder="Password" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
                 </div>
                 <button type="submit" class="submit-btn">Create Account</button>
             </form>
