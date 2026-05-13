@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from models import db, User, Match, Game, Message
 from forms import LoginForm, RegisterForm
+from elo import record_match_with_elo
 
 load_dotenv()
 
@@ -237,22 +238,27 @@ def create_app():
         
         # Mark game as finished
         game.status = 'finished'
-
-        # Update winner's stats
-        winner_id = game.player1_id if game.current_turn == 'black' else game.player2_id
-        winner = User.query.get(winner_id)
-        if winner:
-            winner.wins += 1
-            winner.matches_played += 1
-    
-        # Update loser's stats
-        loser_id = game.player2_id if winner_id == game.player1_id else game.player1_id
-        loser = User.query.get(loser_id)
-        if loser:
-            loser.matches_played += 1
-
-        db.session.commit()
-        return jsonify({'success': True})
+        
+        data = request.get_json()
+        result = data.get('result', 'draw')  # 'white_win', 'black_win', or 'draw'
+        
+        # Get players
+        white_player = User.query.get(game.player1_id)
+        black_player = User.query.get(game.player2_id)
+        
+        if white_player and black_player:
+            # Record match with ELO updates
+            elo_changes = record_match_with_elo(white_player, black_player, result)
+            
+            # Update and save players
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'elo_changes': elo_changes
+            })
+        
+        return jsonify({'success': False, 'message': 'Players not found'})
 
     return app
 

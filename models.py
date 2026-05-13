@@ -19,6 +19,10 @@ class User(UserMixin, db.Model):
     # Fields for match statistics
     matches_played = db.Column(db.Integer, default=0)
     wins = db.Column(db.Integer, default=0)
+    
+    # ELO rating system
+    elo_rating = db.Column(db.Integer, default=1600)
+    elo_history = db.Column(db.Text, default='[]')  # JSON array of ELO changes
 
     # Dynamic property to calculate win rate for the frontend
     @property
@@ -46,10 +50,16 @@ class Match(db.Model):
     white_player_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     black_player_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
-    # Result of the match (e.g., 'Victory', 'Defeat', 'Draw')
-    result = db.Column(db.String(50)) 
+    # Result of the match (e.g., 'white_win', 'black_win', 'draw')
+    result = db.Column(db.String(50))
     mode = db.Column(db.String(50), default='1v1 Quick Match')
     date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # ELO changes for both players (before and after)
+    white_elo_before = db.Column(db.Integer, nullable=True)
+    white_elo_after = db.Column(db.Integer, nullable=True)
+    black_elo_before = db.Column(db.Integer, nullable=True)
+    black_elo_after = db.Column(db.Integer, nullable=True)
 
     # Relationships
     white_player = db.relationship('User', foreign_keys=[white_player_id])
