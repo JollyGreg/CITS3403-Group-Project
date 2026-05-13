@@ -39,10 +39,13 @@ def create_app():
         # Initialize forms to be rendered in the index.html modal
         login_form = LoginForm()
         register_form = RegisterForm()
+        # Query top 5 users by wins for the leaderboard
+        top_users = User.query.order_by(User.wins.desc()).limit(5).all()
         return render_template("index.html", 
                                current_user=current_user, 
                                login_form=login_form, 
-                               register_form=register_form)
+                               register_form=register_form,
+                               top_users=top_users)
 
     @app.route("/login", methods=['GET', 'POST'])
     def login():
@@ -234,6 +237,20 @@ def create_app():
         
         # Mark game as finished
         game.status = 'finished'
+
+        # Update winner's stats
+        winner_id = game.player1_id if game.current_turn == 'black' else game.player2_id
+        winner = User.query.get(winner_id)
+        if winner:
+            winner.wins += 1
+            winner.matches_played += 1
+    
+        # Update loser's stats
+        loser_id = game.player2_id if winner_id == game.player1_id else game.player1_id
+        loser = User.query.get(loser_id)
+        if loser:
+            loser.matches_played += 1
+
         db.session.commit()
         return jsonify({'success': True})
 
