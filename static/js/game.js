@@ -144,7 +144,8 @@ function applyBoardState(state) {
         cell.setAttribute('piece-type', piece.type);
         cell.setAttribute('piece-color', piece.color);
         cell.setAttribute('draggable', 'true');
-        cell.setAttribute('moved', 'true');
+        const startingRank = piece.color === 'white' ? 2 : 7;
+        cell.setAttribute('moved', row !== startingRank ? 'true' : 'false');
 
         cell.addEventListener('mouseenter', mouseEnter);
         cell.addEventListener('mouseleave', mouseLeave);
