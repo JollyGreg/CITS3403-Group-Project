@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import json
 
 db = SQLAlchemy()
 
@@ -53,3 +54,68 @@ class Match(db.Model):
     # Relationships
     white_player = db.relationship('User', foreign_keys=[white_player_id])
     black_player = db.relationship('User', foreign_keys=[black_player_id])
+
+# Table for active and completed games
+class Game(db.Model):
+    __tablename__ = 'games'
+
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # The two players in the game
+    player1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    player2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # Game status: waiting, active, finished
+    status = db.Column(db.String(20), default='waiting')
+    
+    # Board state stored as JSON string for server-side sync
+    board_state = db.Column(db.Text, nullable=True)
+    
+    # Whose turn it is
+    current_turn = db.Column(db.String(10), default='white')
+    
+    # When the game was created
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    player1 = db.relationship('User', foreign_keys=[player1_id])
+    player2 = db.relationship('User', foreign_keys=[player2_id])
+    
+    # Messages in this game
+    messages = db.relationship('Message', backref='game', lazy=True)
+
+    def get_board(self):
+        """Return board state as a dictionary"""
+        if self.board_state:
+            return json.loads(self.board_state)
+        return None
+
+    def set_board(self, board_dict):
+        """Save board state as JSON string"""
+        self.board_state = json.dumps(board_dict)
+
+    def __repr__(self):
+        return f'<Game {self.id}: {self.player1_id} vs {self.player2_id}>'
+
+
+# Table for storing in-game chat messages
+class Message(db.Model):
+    __tablename__ = 'messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Link message to a specific game
+    game_id = db.Column(db.Integer, db.ForeignKey('games.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # The text content of the message
+    content = db.Column(db.String(200), nullable=False)
+    
+    # When the message was sent
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationship to get the sender's user object
+    sender = db.relationship('User', foreign_keys=[sender_id])
+
+    def __repr__(self):
+        return f'<Message {self.id} from {self.sender_id}>'

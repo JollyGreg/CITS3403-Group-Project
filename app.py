@@ -1,13 +1,13 @@
 import os
 import sys
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
 
 # Ensure the current directory is in the path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from models import db, User, Match
+from models import db, User, Match, Game, Message
 from forms import LoginForm, RegisterForm
 
 load_dotenv()
@@ -103,9 +103,139 @@ def create_app():
     @app.route("/profile")
     @login_required
     def profile():
-        # TODO: Query recent matches from the database to pass to the template
-        # recent_matches = Match.query.filter_by(...) 
-        return render_template("profile.html", current_user=current_user)
+        # Query recent matches where the current user was either white or black player
+        recent_matches = Match.query.filter(
+            (Match.white_player_id == current_user.id) | 
+            (Match.black_player_id == current_user.id)
+        ).order_by(Match.date.desc()).limit(10).all()
+
+        # Add opponent name to each match for display
+        for match in recent_matches:
+            if match.white_player_id == current_user.id:
+                match.opponent_name = match.black_player.username if match.black_player else 'Unknown'
+            else:
+                match.opponent_name = match.white_player.username if match.white_player else 'Unknown'
+
+        return render_template("profile.html", current_user=current_user, recent_matches=recent_matches)
+
+    # Game API Routes 
+
+    @app.route('/api/game/create', methods=['POST'])
+    @login_required
+    def create_game():
+        # Check if player already has a waiting game
+        existing = Game.query.filter_by(player1_id=current_user.id, status='waiting').first()
+        if existing:
+            return jsonify({'success': True, 'game_id': existing.id, 'status': 'waiting'})
+        
+        # Create a new game and wait for opponent
+        game = Game(player1_id=current_user.id, status='waiting')
+        db.session.add(game)
+        db.session.commit()
+        return jsonify({'success': True, 'game_id': game.id, 'status': 'waiting'})
+
+    @app.route('/api/game/join', methods=['POST'])
+    @login_required
+    def join_game():
+        # Find a waiting game that the current user didn't create
+        game = Game.query.filter_by(status='waiting').filter(
+            Game.player1_id != current_user.id
+        ).first()
+        
+        if not game:
+            return jsonify({'success': False, 'message': 'No games available'})
+        
+        # Join the game as player 2
+        game.player2_id = current_user.id
+        game.status = 'active'
+        db.session.commit()
+        return jsonify({'success': True, 'game_id': game.id, 'status': 'active'})
+
+    @app.route('/api/game/<int:game_id>/state', methods=['GET'])
+    @login_required
+    def get_game_state(game_id):
+        game = Game.query.get_or_404(game_id)
+        
+        # Only players in this game can see state
+        if current_user.id not in [game.player1_id, game.player2_id]:
+            return jsonify({'error': 'Not a player in this game'}), 403
+        
+        return jsonify({
+            'game_id': game.id,
+            'status': game.status,
+            'current_turn': game.current_turn,
+            'board_state': game.get_board(),
+            'player1': game.player1.username,
+            'player2': game.player2.username if game.player2 else None,
+            'your_colour': 'white' if game.player1_id == current_user.id else 'black'
+        })
+
+    @app.route('/api/game/<int:game_id>/move', methods=['POST'])
+    @login_required
+    def make_move(game_id):
+        game = Game.query.get_or_404(game_id)
+        
+        # Verify player is in this game
+        if current_user.id not in [game.player1_id, game.player2_id]:
+            return jsonify({'error': 'Not a player in this game'}), 403
+        
+        # Verify it is this player's turn
+        player_colour = 'white' if game.player1_id == current_user.id else 'black'
+        if game.current_turn != player_colour:
+            return jsonify({'success': False, 'message': 'Not your turn'})
+        
+        data = request.get_json()
+        
+        # Save the new board state
+        game.set_board(data['board_state'])
+        
+        # Switch turns
+        game.current_turn = 'black' if game.current_turn == 'white' else 'white'
+        db.session.commit()
+        
+        return jsonify({'success': True, 'current_turn': game.current_turn})
+
+    @app.route('/api/game/<int:game_id>/messages', methods=['GET'])
+    @login_required
+    def get_messages(game_id):
+        game = Game.query.get_or_404(game_id)
+        
+        # Only players in this game can see messages
+        if current_user.id not in [game.player1_id, game.player2_id]:
+            return jsonify({'error': 'Not a player in this game'}), 403
+        
+        # Fetch messages for this specific game
+        messages = Message.query.filter_by(game_id=game_id).order_by(Message.timestamp.asc()).all()
+        return jsonify([{
+            'sender': m.sender.username,
+            'content': m.content,
+            'timestamp': m.timestamp.strftime('%H:%M')
+        } for m in messages])
+
+    @app.route('/api/game/<int:game_id>/message', methods=['POST'])
+    @login_required
+    def send_message(game_id):
+        game = Game.query.get_or_404(game_id)
+        
+        # Only players in this game can send messages
+        if current_user.id not in [game.player1_id, game.player2_id]:
+            return jsonify({'error': 'Not a player in this game'}), 403
+        
+        data = request.get_json()
+        msg = Message(game_id=game_id, sender_id=current_user.id, content=data['content'])
+        db.session.add(msg)
+        db.session.commit()
+        return jsonify({'success': True})
+
+    @app.route('/api/game/<int:game_id>/end', methods=['POST'])
+    @login_required
+    def end_game(game_id):
+        game = Game.query.get_or_404(game_id)
+        
+        # Mark game as finished
+        game.status = 'finished'
+        db.session.commit()
+        return jsonify({'success': True})
 
     return app
 
