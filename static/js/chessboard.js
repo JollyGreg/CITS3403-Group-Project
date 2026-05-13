@@ -39,6 +39,7 @@ var chesspieces = {
 
 var alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 let dragged = null; // Will hold the <img> element being dragged
+let currentTurn = "white";
 
 // ─── Coordinate helpers ───────────────────────────────────────────────────────
 
@@ -270,6 +271,12 @@ function dragstartHandler(event) {
     // event.target is the <img>
     dragged = event.target;
     const cell = dragged.parentElement;
+    if (cell.getAttribute("piece-color") !== currentTurn) {
+    console.log("Not this player's turn");
+    event.preventDefault();
+    dragged = null;
+    return;
+}
     console.log(
         "Picked up:", cell.getAttribute("piece-type"),
         "at", getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex)
@@ -334,6 +341,8 @@ function dropHandler(event) {
     fromCell.removeAttribute("draggable");
     fromCell.removeAttribute("moved");
     fromCell.replaceWith(fromCell.cloneNode(false)); // removes old event listeners
+    currentTurn = currentTurn === "white" ? "black" : "white";
+    console.log("Current turn:", currentTurn);
 
     clearHighlights();
     dragged = null;
