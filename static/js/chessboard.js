@@ -39,6 +39,7 @@ var chesspieces = {
 
 var alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 let dragged = null; // Will hold the <img> element being dragged
+let currentTurn = "white";
 
 // ─── Coordinate helpers ───────────────────────────────────────────────────────
 
@@ -117,28 +118,33 @@ function getValidMoves(cell) {
 // They can capture diagonally, but only move straight if the square is empty.
 function getPawnMoves(col, row, color, hasMoved) {
     const moves = [];
-    const dir   = color === "white" ? 1 : -1;
+    const dir = color === "white" ? 1 : -1;
     const colIdx = getIntOfAlpha(col);
 
-    // One step forward — only if square is empty
+    const startingRow = color === "white" ? 2 : 7;
+
     const oneStep = [col, row + dir];
     if (inBounds(oneStep) && !getPieceOnCell(oneStep)) {
         moves.push(oneStep);
 
-        // Two steps from starting rank — only if both squares are empty
         const twoStep = [col, row + 2 * dir];
-        if (!hasMoved && inBounds(twoStep) && !getPieceOnCell(twoStep)) {
+        if (
+            row === startingRow &&
+            !hasMoved &&
+            inBounds(twoStep) &&
+            !getPieceOnCell(twoStep)
+        ) {
             moves.push(twoStep);
         }
     }
 
-    // Diagonal captures
-    const diagOffsets = [-1, 1];
-    for (const dx of diagOffsets) {
+    for (const dx of [-1, 1]) {
         const newColIdx = colIdx + dx;
         if (newColIdx < 1 || newColIdx > 8) continue;
+
         const diagPos = [alpha[newColIdx - 1], row + dir];
         const target = getPieceOnCell(diagPos);
+
         if (target && target.color !== color) {
             moves.push(diagPos);
         }
@@ -270,6 +276,12 @@ function dragstartHandler(event) {
     // event.target is the <img>
     dragged = event.target;
     const cell = dragged.parentElement;
+    if (cell.getAttribute("piece-color") !== currentTurn) {
+    console.log("Not this player's turn");
+    event.preventDefault();
+    dragged = null;
+    return;
+}
     console.log(
         "Picked up:", cell.getAttribute("piece-type"),
         "at", getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex)
@@ -357,6 +369,8 @@ function dropHandler(event) {
     fromCell.removeAttribute("draggable");
     fromCell.removeAttribute("moved");
     fromCell.replaceWith(fromCell.cloneNode(false)); // removes old event listeners
+    currentTurn = currentTurn === "white" ? "black" : "white";
+    console.log("Current turn:", currentTurn);
 
     clearHighlights();
 
