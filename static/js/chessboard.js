@@ -83,6 +83,50 @@ function getPieceOnCell(pos) {
     if (!type) return null;
     return { type, color, cell };
 }
+function findKing(color) {
+    const table = document.getElementById("ChessTable");
+
+    for (let rowIndex = 0; rowIndex < 8; rowIndex++) {
+        for (let cellIndex = 1; cellIndex <= 8; cellIndex++) {
+            const cell = table.rows[rowIndex].cells[cellIndex];
+
+            if (
+                cell.getAttribute("piece-type") === "King" &&
+                cell.getAttribute("piece-color") === color
+            ) {
+                return getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex);
+            }
+        }
+    }
+
+    return null;
+}
+function isKingInCheck(color) {
+    const kingPosition = findKing(color);
+    if (!kingPosition) return false;
+
+    const opponentColor = color === "white" ? "black" : "white";
+    const table = document.getElementById("ChessTable");
+
+    for (let rowIndex = 0; rowIndex < 8; rowIndex++) {
+        for (let cellIndex = 1; cellIndex <= 8; cellIndex++) {
+            const cell = table.rows[rowIndex].cells[cellIndex];
+
+            if (cell.getAttribute("piece-color") === opponentColor) {
+                const moves = getValidMoves(cell);
+
+                const attacksKing = moves.some(move =>
+                    move[0] === kingPosition[0] &&
+                    Number(move[1]) === Number(kingPosition[1])
+                );
+
+                if (attacksKing) return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 // Checks whether a square is on the board
 function inBounds(pos) {
@@ -118,33 +162,28 @@ function getValidMoves(cell) {
 // They can capture diagonally, but only move straight if the square is empty.
 function getPawnMoves(col, row, color, hasMoved) {
     const moves = [];
-    const dir = color === "white" ? 1 : -1;
+    const dir   = color === "white" ? 1 : -1;
     const colIdx = getIntOfAlpha(col);
 
-    const startingRow = color === "white" ? 2 : 7;
-
+    // One step forward — only if square is empty
     const oneStep = [col, row + dir];
     if (inBounds(oneStep) && !getPieceOnCell(oneStep)) {
         moves.push(oneStep);
 
+        // Two steps from starting rank — only if both squares are empty
         const twoStep = [col, row + 2 * dir];
-        if (
-            row === startingRow &&
-            !hasMoved &&
-            inBounds(twoStep) &&
-            !getPieceOnCell(twoStep)
-        ) {
+        if (!hasMoved && inBounds(twoStep) && !getPieceOnCell(twoStep)) {
             moves.push(twoStep);
         }
     }
 
-    for (const dx of [-1, 1]) {
+    // Diagonal captures
+    const diagOffsets = [-1, 1];
+    for (const dx of diagOffsets) {
         const newColIdx = colIdx + dx;
         if (newColIdx < 1 || newColIdx > 8) continue;
-
         const diagPos = [alpha[newColIdx - 1], row + dir];
         const target = getPieceOnCell(diagPos);
-
         if (target && target.color !== color) {
             moves.push(diagPos);
         }
@@ -295,23 +334,10 @@ function dragoverHandler(event) {
 }
 
 function dropHandler(event) {
-     console.log('playerColour:', playerColour, 'gameId:', gameId);
-    // Check if it's this player's turn
-    if (playerColour && gameId) {
-        if (window._currentTurn !== playerColour) {
-            console.log("Not your turn!");
-            dragged = null;
-            return;
-        }
-    }    
     event.preventDefault();
     if (!dragged) return;
 
     const fromCell = dragged.parentElement;
-    if (!fromCell) {
-        dragged = null;
-        return;
-    }
     // The drop target might be a <td> or another <img> sitting in a <td>
     const toCell   = event.target.tagName === "IMG"
         ? event.target.parentElement
@@ -319,14 +345,14 @@ function dropHandler(event) {
 
     if (!toCell || toCell.tagName !== "TD") return;
     if (toCell === fromCell) return;
+    const targetPieceColor = toCell.getAttribute("piece-color");
+    const movingPieceColor = fromCell.getAttribute("piece-color");
 
-    // Prevent moving opponent's pieces
-    const pieceColor = fromCell.getAttribute('piece-color');
-    if (gameId && pieceColor !== playerColour) {
-        console.log("That's not your piece!");
+    if (targetPieceColor && targetPieceColor === movingPieceColor) {
+        console.log("Cannot capture your own piece");
         dragged = null;
         return;
-    }
+}
 
     const fromPos = getPositionFromCell(fromCell.cellIndex, fromCell.parentNode.rowIndex);
     const toPos   = getPositionFromCell(toCell.cellIndex,   toCell.parentNode.rowIndex);
@@ -341,8 +367,6 @@ function dropHandler(event) {
     }
 
     console.log("Moving", fromCell.getAttribute("piece-type"), "from", fromPos, "to", toPos);
-    // Save what was on the destination cell BEFORE moving
-    const capturedType = toCell.getAttribute('piece-type');
 
     // Move piece to destination cell
     toCell.innerHTML = fromCell.innerHTML;
@@ -371,44 +395,12 @@ function dropHandler(event) {
     fromCell.replaceWith(fromCell.cloneNode(false)); // removes old event listeners
     currentTurn = currentTurn === "white" ? "black" : "white";
     console.log("Current turn:", currentTurn);
+    
+    if (isKingInCheck(currentTurn)) {
+    alert(currentTurn + " king is in check!");
+}
 
     clearHighlights();
-
-    // If king was captured end the game
-    if (capturedType === 'King') {
-        if (gameId) {
-            const boardState = captureBoardState();
-            fetch(`/api/game/${gameId}/move`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ board_state: boardState })
-            })
-            .then(() => fetch(`/api/game/${gameId}/end`, { method: 'POST' }))
-            .then(() => {
-                showGameOver(`Game over! ${playerColour} wins!`);
-            });
-        }
-        dragged = null;
-        return;
-    }
-
-    // Send board state to server after a valid move
-    if (gameId) {
-        const boardState = captureBoardState();
-        fetch(`/api/game/${gameId}/move`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ board_state: boardState })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                window._currentTurn = data.current_turn;
-                justMoved = true;
-            }
-        });
-    }
-
     dragged = null;
 }
 
@@ -459,22 +451,6 @@ function loadChessboard(colour) {
 
 document.addEventListener('DOMContentLoaded', function () {
     console.log("DOM fully loaded!");
-    // Board is loaded by game.js when game starts
+    loadChessboard("black");
+    loadChessboard("white");
 });
-
-// Captures the current board state as a JSON object for server sync
-function captureBoardState() {
-    const table = document.getElementById("ChessTable");
-    const state = {};
-    Array.from(table.rows).forEach(row => {
-        Array.from(row.cells).forEach(cell => {
-            const type = cell.getAttribute("piece-type");
-            const color = cell.getAttribute("piece-color");
-            if (type && color) {
-                const pos = getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex);
-                state[`${pos[0]}${pos[1]}`] = { type, color };
-            }
-        });
-    });
-    return state;
-}
