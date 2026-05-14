@@ -129,31 +129,19 @@
                 <aside class="panel">
                     <div class="panel-title">Global Leaderboard</div>
                     <ul class="leaderboard-list">
+                        {% for user in top_users %}
                         <li class="leaderboard-item">
-                            <div class="rank-num rank-1">1</div>
-                            <div class="player-info">User1</div>
-                            <div class="player-score">2882</div>
+                            <div class="rank-num {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">
+                                {{ loop.index }}
+                            </div>
+                            <div class="player-info">{{ user.username }}</div>
+                            <div class="player-score">{{ user.wins }}</div>
                         </li>
+                        {% else %}
                         <li class="leaderboard-item">
-                            <div class="rank-num rank-2">2</div>
-                            <div class="player-info">User2</div>
-                            <div class="player-score">2789</div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem;">No players yet!</div>
                         </li>
-                        <li class="leaderboard-item">
-                            <div class="rank-num rank-3">3</div>
-                            <div class="player-info">User3</div>
-                            <div class="player-score">2780</div>
-                        </li>
-                        <li class="leaderboard-item">
-                            <div class="rank-num">4</div>
-                            <div class="player-info">User4</div>
-                            <div class="player-score">2773</div>
-                        </li>
-                        <li class="leaderboard-item">
-                            <div class="rank-num">5</div>
-                            <div class="player-info">User5</div>
-                            <div class="player-score">2760</div>
-                        </li>
+                        {% endfor %}
                     </ul>
                 </aside>
             </div>
