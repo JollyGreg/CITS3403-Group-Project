@@ -119,22 +119,3 @@ class Message(db.Model):
 
     def __repr__(self):
         return f'<Message {self.id} from {self.sender_id}>'
- 
-# Table for storing in-game chat messages
-class Message(db.Model):
-    __tablename__ = 'messages'
-
-    id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    
-    # The text content of the message
-    content = db.Column(db.String(200), nullable=False)
-    
-    # When the message was sent
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relationship to get the sender's user object
-    sender = db.relationship('User', foreign_keys=[sender_id])
-
-    def __repr__(self):
-        return f'<Message {self.id} from {self.sender_id}>'

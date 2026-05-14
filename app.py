@@ -254,26 +254,7 @@ def create_app():
         db.session.commit()
         return jsonify({'success': True})
 
-    @app.route('/api/messages', methods=['GET'])
-    @login_required
-    def get_messages():
-        # Fetch the 50 most recent messages ordered by time
-        messages = Message.query.order_by(Message.timestamp.asc()).limit(50).all()
-        return jsonify([{
-            'sender': m.sender.username,
-            'content': m.content,
-            'timestamp': m.timestamp.strftime('%H:%M')
-        } for m in messages])
 
-    @app.route('/api/messages', methods=['POST'])
-    @login_required
-    def send_message():
-        # Save a new message from the current user to the database
-        data = request.get_json()
-        msg = Message(sender_id=current_user.id, content=data['content'])
-        db.session.add(msg)
-        db.session.commit()
-        return jsonify({'success': True})
 
     return app
 
