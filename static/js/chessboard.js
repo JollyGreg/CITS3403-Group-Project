@@ -113,7 +113,7 @@ function isKingInCheck(color) {
             const cell = table.rows[rowIndex].cells[cellIndex];
 
             if (cell.getAttribute("piece-color") === opponentColor) {
-                const moves = getValidMoves(cell);
+                const moves = getValidMoves(cell, true);
 
                 const attacksKing = moves.some(move =>
                     move[0] === kingPosition[0] &&
@@ -159,7 +159,12 @@ function wouldMoveLeaveKingInCheck(fromCell, toCell) {
     fromCell.removeAttribute("draggable");
     fromCell.removeAttribute("moved");
 
+    const originalTurn = currentTurn;
+    currentTurn = movingColor === "white" ? "black" : "white";
+
     const leavesKingInCheck = isKingInCheck(movingColor);
+
+    currentTurn = originalTurn;
 
     // restore original board state
     fromCell.innerHTML = fromState.innerHTML;
@@ -192,9 +197,14 @@ function inBounds(pos) {
 
 // ─── Valid move generators ────────────────────────────────────────────────────
 
-function getValidMoves(cell) {
+function getValidMoves(cell, ignoreTurn = false) {
     const pieceType  = cell.getAttribute("piece-type");
     const pieceColor = cell.getAttribute("piece-color");
+
+    if (!ignoreTurn && pieceColor !== currentTurn) {
+    return [];
+    }
+
     const cellPos    = getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex);
     const col        = cellPos[0];
     const row        = cellPos[1];
@@ -422,6 +432,13 @@ function dropHandler(event) {
         return;
     }
 
+    const leavesKingInCheck = wouldMoveLeaveKingInCheck(fromCell, toCell);
+
+    if (leavesKingInCheck) {
+    alert("You cannot make a move that leaves your king in check.");
+    dragged = null;
+    return;
+}
     console.log("Moving", fromCell.getAttribute("piece-type"), "from", fromPos, "to", toPos);
 
     // Move piece to destination cell
