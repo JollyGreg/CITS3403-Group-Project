@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chessboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbox.css') }}">
     <script src="{{ url_for('static', filename='js/chessboard.js') }}"></script>
 </head>
 <body>
@@ -33,7 +34,6 @@
                 <tr> <th class="axis">3</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
                 <tr> <th class="axis">2</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
                 <tr> <th class="axis">1</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                
                 <tr>
                     <th class="axis"></th> 
                     <th class="axis">a</th> 
@@ -49,7 +49,29 @@
         </div>
     </main>
 
+    <button class="chat-toggle" id="chatToggleBtn" onclick="toggleChat()" title="Open Chat">💬</button>
+
+    <div class="chat-panel hidden" id="chatPanel">
+        <div class="chat-header">
+            <span>Game Chat</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="chat-status">Opponent connected</span>
+                <button onclick="toggleChat()" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer; padding:0;">✕</button>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Type a message..." maxlength="200"/>
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    const currentUsername = "{{ current_user.username }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/chatbox.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chat-toggle.js') }}"></script>
 
 </body>
 </html>
