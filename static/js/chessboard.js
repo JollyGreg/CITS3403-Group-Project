@@ -127,6 +127,62 @@ function isKingInCheck(color) {
 
     return false;
 }
+function wouldMoveLeaveKingInCheck(fromCell, toCell) {
+    const movingColor = fromCell.getAttribute("piece-color");
+
+    const fromState = {
+        innerHTML: fromCell.innerHTML,
+        pieceType: fromCell.getAttribute("piece-type"),
+        pieceColor: fromCell.getAttribute("piece-color"),
+        draggable: fromCell.getAttribute("draggable"),
+        moved: fromCell.getAttribute("moved")
+    };
+
+    const toState = {
+        innerHTML: toCell.innerHTML,
+        pieceType: toCell.getAttribute("piece-type"),
+        pieceColor: toCell.getAttribute("piece-color"),
+        draggable: toCell.getAttribute("draggable"),
+        moved: toCell.getAttribute("moved")
+    };
+
+    // simulate move
+    toCell.innerHTML = fromCell.innerHTML;
+    toCell.setAttribute("piece-type", fromState.pieceType);
+    toCell.setAttribute("piece-color", fromState.pieceColor);
+    toCell.setAttribute("draggable", "true");
+    toCell.setAttribute("moved", "true");
+
+    fromCell.innerHTML = "";
+    fromCell.removeAttribute("piece-type");
+    fromCell.removeAttribute("piece-color");
+    fromCell.removeAttribute("draggable");
+    fromCell.removeAttribute("moved");
+
+    const leavesKingInCheck = isKingInCheck(movingColor);
+
+    // restore original board state
+    fromCell.innerHTML = fromState.innerHTML;
+    if (fromState.pieceType) fromCell.setAttribute("piece-type", fromState.pieceType);
+    if (fromState.pieceColor) fromCell.setAttribute("piece-color", fromState.pieceColor);
+    if (fromState.draggable) fromCell.setAttribute("draggable", fromState.draggable);
+    if (fromState.moved) fromCell.setAttribute("moved", fromState.moved);
+
+    toCell.innerHTML = toState.innerHTML;
+    if (toState.pieceType) {
+        toCell.setAttribute("piece-type", toState.pieceType);
+        toCell.setAttribute("piece-color", toState.pieceColor);
+        toCell.setAttribute("draggable", toState.draggable || "true");
+        toCell.setAttribute("moved", toState.moved || "false");
+    } else {
+        toCell.removeAttribute("piece-type");
+        toCell.removeAttribute("piece-color");
+        toCell.removeAttribute("draggable");
+        toCell.removeAttribute("moved");
+    }
+
+    return leavesKingInCheck;
+}
 
 // Checks whether a square is on the board
 function inBounds(pos) {
