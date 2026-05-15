@@ -386,6 +386,7 @@ function dropHandler(event) {
         return;
     }
 
+
     console.log("Moving", fromCell.getAttribute("piece-type"), "from", fromPos, "to", toPos);
     // Save what was on the destination cell BEFORE moving
     const capturedType = toCell.getAttribute('piece-type');
