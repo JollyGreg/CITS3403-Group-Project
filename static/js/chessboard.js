@@ -276,12 +276,21 @@ function dragstartHandler(event) {
     // event.target is the <img>
     dragged = event.target;
     const cell = dragged.parentElement;
-    if (cell.getAttribute("piece-color") !== currentTurn) {
-    console.log("Not this player's turn");
-    event.preventDefault();
-    dragged = null;
-    return;
-}
+        
+    //in a multiplayer game, only allow moving your own colour
+    if (playerColour && gameId) {
+        if (cell.getAttribute("piece-color") !== playerColour) {
+            event.preventDefault();
+            dragged = null;
+            return;
+        }
+        if (window._currentTurn !== playerColour) {
+            event.preventDefault();
+            dragged = null;
+            return;
+        }
+    }
+
     console.log(
         "Picked up:", cell.getAttribute("piece-type"),
         "at", getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex)
