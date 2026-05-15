@@ -119,6 +119,89 @@ function isKingInCheck(color) {
     return false;
 }
 
+function hasAnyLegalMove(color) {
+    for (let row = 1; row <= 8; row++) {
+        for (let col of alpha) {
+            const piece = getPieceOnCell([col, row]);
+
+            if (piece && piece.color === color) {
+                const fromCell = piece.cell;
+                const moves = getValidMoves(fromCell);
+
+                for (const move of moves) {
+                    const toCell = getCellElement(move);
+
+                    if (!toCell) continue;
+
+                    const movingColor = fromCell.getAttribute("piece-color");
+
+                    const fromState = {
+                        html: fromCell.innerHTML,
+                        type: fromCell.getAttribute("piece-type"),
+                        color: fromCell.getAttribute("piece-color"),
+                        draggable: fromCell.getAttribute("draggable"),
+                        moved: fromCell.getAttribute("moved")
+                    };
+
+                    const toState = {
+                        html: toCell.innerHTML,
+                        type: toCell.getAttribute("piece-type"),
+                        color: toCell.getAttribute("piece-color"),
+                        draggable: toCell.getAttribute("draggable"),
+                        moved: toCell.getAttribute("moved")
+                    };
+
+                    // simulate move
+                    toCell.innerHTML = fromState.html;
+                    toCell.setAttribute("piece-type", fromState.type);
+                    toCell.setAttribute("piece-color", fromState.color);
+                    toCell.setAttribute("draggable", fromState.draggable || "true");
+                    toCell.setAttribute("moved", "true");
+
+                    fromCell.innerHTML = "";
+                    fromCell.removeAttribute("piece-type");
+                    fromCell.removeAttribute("piece-color");
+                    fromCell.removeAttribute("draggable");
+                    fromCell.removeAttribute("moved");
+
+                    const stillInCheck = isKingInCheck(movingColor);
+
+                    // restore origin
+                    fromCell.innerHTML = fromState.html;
+                    fromCell.setAttribute("piece-type", fromState.type);
+                    fromCell.setAttribute("piece-color", fromState.color);
+                    fromCell.setAttribute("draggable", fromState.draggable || "true");
+                    fromCell.setAttribute("moved", fromState.moved || "false");
+
+                    // restore destination
+                    toCell.innerHTML = toState.html;
+                    if (toState.type) {
+                        toCell.setAttribute("piece-type", toState.type);
+                        toCell.setAttribute("piece-color", toState.color);
+                        toCell.setAttribute("draggable", toState.draggable || "true");
+                        toCell.setAttribute("moved", toState.moved || "false");
+                    } else {
+                        toCell.removeAttribute("piece-type");
+                        toCell.removeAttribute("piece-color");
+                        toCell.removeAttribute("draggable");
+                        toCell.removeAttribute("moved");
+                    }
+
+                    if (!stillInCheck) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+function isCheckmate(color) {
+    return isKingInCheck(color) && !hasAnyLegalMove(color);
+}
+
 // Checks whether a square is on the board
 function inBounds(pos) {
     const colIdx = getIntOfAlpha(pos[0]);
@@ -476,9 +559,12 @@ if (leavesKingInCheck) {
     fromCell.replaceWith(fromCell.cloneNode(false)); // removes old event listeners
     currentTurn = currentTurn === "white" ? "black" : "white";
     console.log("Current turn:", currentTurn);
+    
     // Check if opponent is now in check
-    if (isKingInCheck(currentTurn)) {
-    alert(currentTurn + " king is in check!");
+    if (isCheckmate(currentTurn)) {
+    alert(currentTurn + " is checkmated!");
+    } else if (isKingInCheck(currentTurn)) {
+        alert(currentTurn + " king is in check!");
     }
 
     clearHighlights();
