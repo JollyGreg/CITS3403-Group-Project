@@ -262,6 +262,8 @@ function clearHighlights() {
 function mouseEnter(event) {
     // event.target may be the <img> inside the cell
     const cell = event.currentTarget;
+    // Only show valid moves for your own pieces
+    if (playerColour && cell.getAttribute('piece-color') !== playerColour) return;
     const validMoves = getValidMoves(cell);
     showValidMoves(validMoves);
 }
