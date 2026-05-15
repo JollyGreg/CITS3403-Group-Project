@@ -385,7 +385,65 @@ function dropHandler(event) {
         dragged = null;
         return;
     }
+    const movingColor = fromCell.getAttribute("piece-color");
 
+const fromState = {
+    html: fromCell.innerHTML,
+    type: fromCell.getAttribute("piece-type"),
+    color: fromCell.getAttribute("piece-color"),
+    draggable: fromCell.getAttribute("draggable"),
+    moved: fromCell.getAttribute("moved")
+};
+
+const toState = {
+    html: toCell.innerHTML,
+    type: toCell.getAttribute("piece-type"),
+    color: toCell.getAttribute("piece-color"),
+    draggable: toCell.getAttribute("draggable"),
+    moved: toCell.getAttribute("moved")
+};
+
+// Simulate move
+toCell.innerHTML = fromState.html;
+toCell.setAttribute("piece-type", fromState.type);
+toCell.setAttribute("piece-color", fromState.color);
+toCell.setAttribute("draggable", fromState.draggable || "true");
+toCell.setAttribute("moved", "true");
+
+fromCell.innerHTML = "";
+fromCell.removeAttribute("piece-type");
+fromCell.removeAttribute("piece-color");
+fromCell.removeAttribute("draggable");
+fromCell.removeAttribute("moved");
+
+const leavesKingInCheck = isKingInCheck(movingColor);
+
+// Restore origin cell
+fromCell.innerHTML = fromState.html;
+fromCell.setAttribute("piece-type", fromState.type);
+fromCell.setAttribute("piece-color", fromState.color);
+fromCell.setAttribute("draggable", fromState.draggable || "true");
+fromCell.setAttribute("moved", fromState.moved || "false");
+
+// Restore destination cell
+toCell.innerHTML = toState.html;
+if (toState.type) {
+    toCell.setAttribute("piece-type", toState.type);
+    toCell.setAttribute("piece-color", toState.color);
+    toCell.setAttribute("draggable", toState.draggable || "true");
+    toCell.setAttribute("moved", toState.moved || "false");
+} else {
+    toCell.removeAttribute("piece-type");
+    toCell.removeAttribute("piece-color");
+    toCell.removeAttribute("draggable");
+    toCell.removeAttribute("moved");
+}
+
+if (leavesKingInCheck) {
+    alert("You cannot make a move that leaves your king in check.");
+    dragged = null;
+    return;
+}
 
     console.log("Moving", fromCell.getAttribute("piece-type"), "from", fromPos, "to", toPos);
     // Save what was on the destination cell BEFORE moving
