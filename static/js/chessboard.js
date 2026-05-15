@@ -84,6 +84,41 @@ function getPieceOnCell(pos) {
     return { type, color, cell };
 }
 
+// ─── King safety helpers ─────────────────────────────────────────────
+
+function findKing(color) {
+    for (let row = 1; row <= 8; row++) {
+        for (let col of alpha) {
+            const piece = getPieceOnCell([col, row]);
+            if (piece && piece.type === "King" && piece.color === color) {
+                return [col, row];
+            }
+        }
+    }
+    return null;
+}
+
+function isKingInCheck(color) {
+    const kingPos = findKing(color);
+    if (!kingPos) return false;
+
+    for (let row = 1; row <= 8; row++) {
+        for (let col of alpha) {
+            const piece = getPieceOnCell([col, row]);
+
+            if (piece && piece.color !== color) {
+                const moves = getValidMoves(piece.cell);
+
+                if (moves.some(m => m[0] === kingPos[0] && m[1] === kingPos[1])) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 // Checks whether a square is on the board
 function inBounds(pos) {
     const colIdx = getIntOfAlpha(pos[0]);
@@ -351,6 +386,7 @@ function dropHandler(event) {
         return;
     }
 
+
     console.log("Moving", fromCell.getAttribute("piece-type"), "from", fromPos, "to", toPos);
     // Save what was on the destination cell BEFORE moving
     const capturedType = toCell.getAttribute('piece-type');
@@ -382,6 +418,10 @@ function dropHandler(event) {
     fromCell.replaceWith(fromCell.cloneNode(false)); // removes old event listeners
     currentTurn = currentTurn === "white" ? "black" : "white";
     console.log("Current turn:", currentTurn);
+    // Check if opponent is now in check
+    if (isKingInCheck(currentTurn)) {
+    alert(currentTurn + " king is in check!");
+    }
 
     clearHighlights();
 
