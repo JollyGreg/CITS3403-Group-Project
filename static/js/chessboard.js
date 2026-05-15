@@ -40,6 +40,7 @@ var chesspieces = {
 var alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 let dragged = null; // Will hold the <img> element being dragged
 let currentTurn = "white";
+let chessGameOver = false;
 
 // ─── Coordinate helpers ───────────────────────────────────────────────────────
 
@@ -200,6 +201,17 @@ function hasAnyLegalMove(color) {
 
 function isCheckmate(color) {
     return isKingInCheck(color) && !hasAnyLegalMove(color);
+}
+
+function checkGameEndState() {
+    if (chessGameOver) return;
+
+    const turnToCheck = window._currentTurn || currentTurn;
+
+    if (turnToCheck && isCheckmate(turnToCheck)) {
+        lockBoardAfterCheckmate();
+        alert(turnToCheck + " is checkmated!");
+    }
 }
 
 // Checks whether a square is on the board
@@ -375,13 +387,24 @@ function clearHighlights() {
     });
 }
 
+function lockBoardAfterCheckmate() {
+    chessGameOver = true;
+    clearHighlights();
+
+    document.querySelectorAll("#ChessTable img").forEach(img => {
+        img.setAttribute("draggable", "false");
+    });
+}
+
 // ─── Mouse hover (preview moves) ─────────────────────────────────────────────
 
 function mouseEnter(event) {
-    // event.target may be the <img> inside the cell
+    if (chessGameOver) return;
+
     const cell = event.currentTarget;
-    // Only show valid moves for your own pieces
+
     if (playerColour && cell.getAttribute('piece-color') !== playerColour) return;
+
     const validMoves = getValidMoves(cell);
     showValidMoves(validMoves);
 }
@@ -393,6 +416,11 @@ function mouseLeave(event) {
 // ─── Drag & Drop (dragging the <img>) ────────────────────────────────────────
 
 function dragstartHandler(event) {
+    if (chessGameOver) {
+    event.preventDefault();
+    return;
+    } 
+
     // event.target is the <img>
     dragged = event.target;
     const cell = dragged.parentElement;
@@ -424,6 +452,12 @@ function dragoverHandler(event) {
 }
 
 function dropHandler(event) {
+    if (chessGameOver) {
+    event.preventDefault();
+    dragged = null;
+    return;
+    }
+
      console.log('playerColour:', playerColour, 'gameId:', gameId);
     // Check if it's this player's turn
     if (playerColour && gameId) {
@@ -559,10 +593,11 @@ if (leavesKingInCheck) {
     fromCell.replaceWith(fromCell.cloneNode(false)); // removes old event listeners
     currentTurn = currentTurn === "white" ? "black" : "white";
     console.log("Current turn:", currentTurn);
-    
+
     // Check if opponent is now in check
     if (isCheckmate(currentTurn)) {
-    alert(currentTurn + " is checkmated!");
+        lockBoardAfterCheckmate();
+        alert(currentTurn + " is checkmated!");
     } else if (isKingInCheck(currentTurn)) {
         alert(currentTurn + " king is in check!");
     }
@@ -671,5 +706,17 @@ function captureBoardState() {
             }
         });
     });
+
     return state;
 }
+
+setInterval(() => {
+    const table = document.getElementById("ChessTable");
+
+    if (!table || chessGameOver) return;
+
+    const hasPieces = document.querySelector("#ChessTable img");
+    if (!hasPieces) return;
+
+    checkGameEndState();
+}, 1000);
