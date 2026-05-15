@@ -45,7 +45,7 @@ let currentTurn = "white";
 
 // Returns chess position e.g. ["f", 2] from table cellIndex / rowIndex
 function getPositionFromCell(cellIndex, rowIndex) {
-    return [alpha[cellIndex - 1], (-1 * (rowIndex - 8))];
+    return [alpha[cellIndex], (-1 * (rowIndex - 8))];
 }
 
 // Returns [cellIndex, rowIndex] in the table from a chess position e.g. ["f", 2]
@@ -71,7 +71,7 @@ function getCellElement(pos) {
     if (!colIdx) return null;
     const table = document.getElementById("ChessTable");
     const tableRow = 8 - row; // rank 8 → row index 0, rank 1 → row index 7
-    return table.rows[tableRow].cells[colIdx];
+    return table.rows[tableRow].cells[colIdx - 1];
 }
 
 // Returns piece info on a cell, or null if empty
@@ -447,7 +447,7 @@ function loadChessboard(colour) {
             const colIdx     = getIntOfAlpha(colLetter); // 1-based column index
             const tableRowIdx = 8 - rank;                // rank 8 → row 0, rank 1 → row 7
 
-            const cell = table.rows[tableRowIdx].cells[colIdx];
+            const cell = table.rows[tableRowIdx].cells[colIdx - 1];
 
             // Build the img — draggable=true on the img itself, pointer-events:none removed
             cell.innerHTML = `<img src="${svgUrl}" draggable="true" style="width:100%;height:100%;display:block;">`;
