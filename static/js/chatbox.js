@@ -12,6 +12,9 @@ function scrollToBottom() {
 //creates and displays the message bubble with the senders name above it
 function addMessage(text, sender, isSelf) {
     const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.alignItems = isSelf ? 'flex-end' : 'flex-start';
     const senderLabel = document.createElement('div');
     senderLabel.classList.add('message-sender');
     senderLabel.textContent = sender;
