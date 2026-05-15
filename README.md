@@ -49,5 +49,34 @@ python -m flask run --debug
 ```
 The application will be running at http://127.0.0.1:5000/.
 
-### Running the applcation NEED TO ADD
-instructions for how to run the tests for the application.
+## Running the Tests
+
+The project includes a comprehensive test suite with over 15 tests, covering both unit logic and end-to-end UI automation as required.
+
+### 1. Prerequisite: Ensure Test Dependencies are Installed
+The testing suite requires `pytest`, `selenium`, and `webdriver-manager`. If you haven't installed them yet, ensure your virtual environment is activated and run:
+```bash
+pip install -r requirements.txt
+```
+## 2. Running Tests
+Run all tests
+To execute the entire test suite (Unit tests + Selenium tests), run the following command from the project root:
+
+```Bash
+pytest tests/ -v
+```
+Run individual tests
+```bash
+pytest tests/test_model.py -v
+pytest tests/test_routes.py -v
+pytest tests/test_security.py -v
+pytest tests/test_selenium.py -v
+```
+
+
+## 3. Test Suite Breakdown
+Unit Tests: Located in test_model.py, test_routes.py, and test_security.py. These verify database integrity, password hashing, and route protection.
+
+Selenium Tests: Located in test_selenium.py. These run against a live version of the server (automatically handled by the live_server fixture in conftest.py) to verify UI components like modals and login flows.
+
+Note: Selenium tests run in headless mode by default, so no browser window will pop up during the automated process.
