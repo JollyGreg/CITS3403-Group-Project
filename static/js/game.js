@@ -46,6 +46,21 @@ function checkGameStatus() {
         });
 }
 
+function flipBoardForBlack() {
+    const table = document.getElementById('ChessTable');
+    table.style.transform = 'rotate(180deg)';
+    
+    //counter-rotate all images so pieces appear right-side up
+    document.querySelectorAll('#ChessTable img').forEach(img => {
+        img.style.transform = 'rotate(180deg)';
+    });
+    
+    //counter-rotate all axis labels so they're readable
+    document.querySelectorAll('#ChessTable .axis').forEach(cell => {
+        cell.style.transform = 'rotate(180deg)';
+    });
+}
+
 //starts the game - shows the board and chat
 function startGame() {
     document.getElementById('gameLobby').style.display = 'none';
@@ -58,6 +73,11 @@ function startGame() {
 
     //set initial turn to white
     window._currentTurn = 'white';
+
+    // Flip board if playing as black
+    if (playerColour === 'black') {
+        flipBoardForBlack();
+    }
 
     //fetch initial game state immediately
     pollGameState();
@@ -89,6 +109,9 @@ function pollGameState() {
             //only apply board state if opponent moved (not after our own move)
             if (data.board_state && !justMoved) {
                 applyBoardState(data.board_state);
+                if (playerColour === 'black') {
+                    flipBoardForBlack();
+                }
             }
             justMoved = false;
         });
