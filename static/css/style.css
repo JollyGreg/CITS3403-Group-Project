@@ -158,44 +158,6 @@ nav {
     box-shadow: 0 15px 40px rgba(139, 92, 246, 0.5);
 }
 
-.tournaments-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-}
-
-.tournaments-table th, 
-.tournaments-table td {
-    padding: 12px 15px; 
-    text-align: left; 
-    border-bottom: 1px solid var(--border-color);
-}
-
-.tournaments-table th {
-    color: var(--text-muted); 
-    font-weight: 600; 
-    text-transform: uppercase; 
-    font-size: 0.85rem;
-}
-
-.tournaments-table tr:hover { 
-    background-color: rgba(255, 255, 255, 0.03); 
-}
-
-.join-btn {
-    background-color: transparent; 
-    color: var(--primary);
-    border: 1px solid var(--primary); 
-    padding: 5px 10px;
-    border-radius: 6px; 
-    cursor: pointer; 
-    transition: 0.3s;
-}
-
-.join-btn:hover { 
-    background-color: var(--primary); 
-    color: white; 
-}
-
 .leaderboard-list { 
     list-style: none; 
 }

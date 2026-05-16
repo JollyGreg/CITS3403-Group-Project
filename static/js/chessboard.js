@@ -452,6 +452,11 @@ function dragoverHandler(event) {
 }
 
 function dropHandler(event) {
+    // sync local turn with server turn
+    if (window._currentTurn) {
+        currentTurn = window._currentTurn;
+    }
+
     if (chessGameOver) {
     event.preventDefault();
     dragged = null;
@@ -520,7 +525,14 @@ const toState = {
     moved: toCell.getAttribute("moved")
 };
 
-// Simulate move
+// Simulate move, clear destination first
+toCell.innerHTML = "";
+toCell.removeAttribute("piece-type");
+toCell.removeAttribute("piece-color");
+toCell.removeAttribute("draggable");
+toCell.removeAttribute("moved");
+
+// Then place the moving piece
 toCell.innerHTML = fromState.html;
 toCell.setAttribute("piece-type", fromState.type);
 toCell.setAttribute("piece-color", fromState.color);
@@ -634,6 +646,7 @@ if (leavesKingInCheck) {
         .then(data => {
             if (data.success) {
                 window._currentTurn = data.current_turn;
+                currentTurn = data.current_turn; // keep local in sync
                 justMoved = true;
             }
         });
@@ -645,11 +658,14 @@ if (leavesKingInCheck) {
 // ─── Board setup ─────────────────────────────────────────────────────────────
 
 function addDragFunctionality(table) {
-    Array.from(table.rows).forEach(row => {
-        Array.from(row.cells).forEach(cell => {
-            cell.addEventListener("dragover",  (e) => { e.preventDefault(); dragoverHandler(e); });
-            cell.addEventListener("drop",      (e) => { e.preventDefault(); dropHandler(e); });
-        });
+    // Use event delegation on the table instead of individual cells
+    table.addEventListener("dragover", (e) => { 
+        e.preventDefault(); 
+        dragoverHandler(e); 
+    });
+    table.addEventListener("drop", (e) => { 
+        e.preventDefault(); 
+        dropHandler(e); 
     });
 }
 
