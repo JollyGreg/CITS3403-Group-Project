@@ -39,20 +39,21 @@
 
     <main class="main-layout container-fluid">
         <div class="row g-4">
-            
+
+            <!-- Profile sidebar -->
             <div class="col-12 col-lg-3">
                 <aside class="panel" {% if current_user.is_authenticated %}onclick="location.href='{{ url_for('profile') }}'"{% endif %}>
                     <div class="profile-card">
                         <div class="avatar"></div>
                         {% if current_user.is_authenticated %}
                             <h2>{{ current_user.username }}</h2>
-                            <p class="text-muted" style="color: var(--text-muted);">Player ID: {{ current_user.id }}</p>
+                            <p style="color: var(--text-muted);">ELO: {{ current_user.elo_rating }}</p>
                         {% else %}
                             <h2>Guest Player</h2>
-                            <p class="text-muted" style="color: var(--text-muted);">Unranked</p>
+                            <p style="color: var(--text-muted);">Unranked</p>
                         {% endif %}
                     </div>
-                    
+
                     {% if current_user.is_authenticated %}
                         <div class="win-rate">
                             <div style="display: flex; justify-content: space-between;">
@@ -65,9 +66,16 @@
                                 <div class="progress-fill" style="width: {{ current_user.win_rate | default(0) }}%;"></div>
                             </div>
                         </div>
-                        
-                        <div style="margin-top: 20px;">
-                            <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">{{ current_user.matches_played | default(0) }}</span></p>
+                        <div style="margin-top: 20px; display: flex; gap: 16px;">
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                W <span style="color: var(--text-main);">{{ current_user.wins }}</span>
+                            </p>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                L <span style="color: var(--text-main);">{{ current_user.losses }}</span>
+                            </p>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                D <span style="color: var(--text-main);">{{ current_user.draws }}</span>
+                            </p>
                         </div>
                     {% else %}
                         <div class="win-rate">
@@ -79,7 +87,6 @@
                                 <div class="progress-fill" style="width: 0%; background: var(--border-color);"></div>
                             </div>
                         </div>
-                        
                         <div style="margin-top: 20px;">
                             <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">0</span></p>
                         </div>
@@ -87,6 +94,7 @@
                 </aside>
             </div>
 
+            <!-- Play button -->
             <div class="col-12 col-lg-6">
                 <section class="panel">
                     {% if current_user.is_authenticated %}
@@ -97,6 +105,7 @@
                 </section>
             </div>
 
+            <!-- Leaderboard -->
             <div class="col-12 col-lg-3">
                 <aside class="panel">
                     <div class="panel-title">Global Leaderboard</div>
@@ -107,7 +116,8 @@
                                 {{ loop.index }}
                             </div>
                             <div class="player-info">{{ user.username }}</div>
-                            <div class="player-score">{{ user.wins }}</div>
+                            <!-- Fixed: was user.wins, now shows ELO since leaderboard is sorted by ELO -->
+                            <div class="player-score">{{ user.elo_rating }}</div>
                         </li>
                         {% else %}
                         <li class="leaderboard-item">
@@ -121,17 +131,19 @@
         </div>
     </main>
 
+    <!-- Login/Register modal -->
     <div id="loginModal" class="modal-overlay">
         <div class="glass-modal">
             <button class="close-btn" onclick="toggleModal()">&times;</button>
-            
+
             <div class="modal-tabs">
                 <span id="tab-login" class="active" onclick="switchTab('login')">Login</span>
                 <span id="tab-register" onclick="switchTab('register')">Register</span>
             </div>
 
             <form id="loginForm" class="auth-form active" method="POST" action="{{ url_for('login') }}">
-                {{ login_form.hidden_tag() }}  <div class="input-group">
+                {{ login_form.hidden_tag() }}
+                <div class="input-group">
                     <input type="text" name="username" placeholder="Username" required>
                 </div>
                 <div class="input-group">
@@ -141,7 +153,8 @@
             </form>
 
             <form id="registerForm" class="auth-form" method="POST" action="{{ url_for('register') }}">
-                {{ register_form.hidden_tag() }} <div class="input-group">
+                {{ register_form.hidden_tag() }}
+                <div class="input-group">
                     <input type="text" name="username" placeholder="Username" required>
                 </div>
                 <div class="input-group">
@@ -161,11 +174,7 @@
     <script>
         function toggleModal() {
             const modal = document.getElementById('loginModal');
-            if (modal.style.display === 'flex') {
-                modal.style.display = 'none';
-            } else {
-                modal.style.display = 'flex';
-            }
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
         }
 
         function switchTab(type) {
