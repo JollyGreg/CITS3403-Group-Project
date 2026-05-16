@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chessboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbox.css') }}">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/chessboard.js') }}"></script>
 </head>
 <body>
@@ -95,6 +96,7 @@
     <script>
         // Jinja variable - must stay in HTML
         const currentUsername = "{{ current_user.username }}";
+        const currentUserId = {{ current_user.id }};
     </script>
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>
     <script src="{{ url_for('static', filename='js/chatbox.js') }}"></script>

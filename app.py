@@ -3,6 +3,7 @@ import sys
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
+from flask_socketio import SocketIO, emit, join_room
 
 # Ensure the current directory is in the path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -12,8 +13,11 @@ from forms import LoginForm, RegisterForm
 
 load_dotenv()
 
+socketio = SocketIO()
+
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
+    socketio.init_app(app, cors_allowed_origins="*")
     
     # Configuration - use environment variables with fallbacks
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-uwa-project')
@@ -152,6 +156,14 @@ def create_app():
         game.player2_id = current_user.id
         game.status = 'active'
         db.session.commit()
+
+        # Notify the waiting player via WebSocket
+        socketio.emit('opponent_joined', {
+            'game_id': game.id,
+            'player1': game.player1.username,
+            'player2': current_user.username,
+            'current_turn': game.current_turn
+        })
         return jsonify({'success': True, 'game_id': game.id, 'status': 'active'})
 
     @app.route('/api/game/<int:game_id>/state', methods=['GET'])
@@ -254,11 +266,75 @@ def create_app():
         db.session.commit()
         return jsonify({'success': True})
 
+    # Player joins a socket room for their specific game, this ensures events are only sent to players in that game
+    @socketio.on('join_game')
+    def handle_join(data):
+        game_id = data['game_id']
+        join_room(f'game_{game_id}')
 
+    # Handles a move from a player, saves board state to database then broadcasts the updated board to both players in the game room
+    @socketio.on('make_move')
+    def handle_move(data):
+        game_id = data['game_id']
+        game = Game.query.get(game_id)
+        if not game:
+            return
+        game.set_board(data['board_state'])
+        game.current_turn = 'black' if game.current_turn == 'white' else 'white'
+        db.session.commit()
+        emit('board_update', {
+            'board_state': game.get_board(),
+            'current_turn': game.current_turn,
+            'player1': game.player1.username,
+            'player2': game.player2.username if game.player2 else None
+        }, room=f'game_{game_id}')
+
+    # Handles a chat message and saves it to the database, then broadcasts it to both players in the game room
+    @socketio.on('send_message')
+    def handle_message(data):
+        game_id = data['game_id']
+        msg = Message(game_id=game_id, sender_id=data['sender_id'], content=data['content'])
+        db.session.add(msg)
+        db.session.commit()
+        emit('new_message', {
+            'sender': data['sender'],
+            'content': data['content'],
+            'timestamp': msg.timestamp.strftime('%H:%M')
+        }, room=f'game_{game_id}')
+
+    # Handles game over, updates win/loss stats, records match history, then broadcasts game over message to both players in the game room
+    @socketio.on('end_game')
+    def handle_end_game(data):
+        game_id = data['game_id']
+        game = Game.query.get(game_id)
+        if not game:
+            return
+        game.status = 'finished'
+        winner_id = game.player1_id if game.current_turn == 'black' else game.player2_id
+        winner = User.query.get(winner_id)
+        if winner:
+            winner.wins += 1
+            winner.matches_played += 1
+        loser_id = game.player2_id if winner_id == game.player1_id else game.player1_id
+        loser = User.query.get(loser_id)
+        if loser:
+            loser.matches_played += 1
+        # Record match in history so it appears on both players profile pages
+        match = Match(
+            white_player_id=game.player1_id,
+            black_player_id=game.player2_id,
+            result='finished',
+            mode='1v1 Quick Match'
+        )
+        db.session.add(match)
+        db.session.commit()
+        emit('game_over', {
+            'message': f'{data["winner"]} wins!'
+        }, room=f'game_{game_id}')
 
     return app
 
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)

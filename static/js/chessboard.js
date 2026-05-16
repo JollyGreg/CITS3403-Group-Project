@@ -620,15 +620,9 @@ if (leavesKingInCheck) {
     if (capturedType === 'King') {
         if (gameId) {
             const boardState = captureBoardState();
-            fetch(`/api/game/${gameId}/move`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ board_state: boardState })
-            })
-            .then(() => fetch(`/api/game/${gameId}/end`, { method: 'POST' }))
-            .then(() => {
-                showGameOver(`Game over! ${playerColour} wins!`);
-            });
+            socket.emit('make_move', { game_id: gameId, board_state: boardState });
+            socket.emit('end_game', { game_id: gameId, winner: playerColour });
+            showGameOver(`Game over! ${playerColour} wins!`);
         }
         dragged = null;
         return;
@@ -637,19 +631,8 @@ if (leavesKingInCheck) {
     // Send board state to server after a valid move
     if (gameId) {
         const boardState = captureBoardState();
-        fetch(`/api/game/${gameId}/move`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ board_state: boardState })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                window._currentTurn = data.current_turn;
-                currentTurn = data.current_turn; // keep local in sync
-                justMoved = true;
-            }
-        });
+        socket.emit('make_move', { game_id: gameId, board_state: boardState });
+        justMoved = true;
     }
 
     dragged = null;
