@@ -6,7 +6,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 echo Removing potential existing database...
-del "instance\chess.db"
+rm -f instance/chess.db
 
 echo "Initializing database..."
 python db.py
