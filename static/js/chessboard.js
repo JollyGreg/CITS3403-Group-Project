@@ -203,6 +203,10 @@ function isCheckmate(color) {
     return isKingInCheck(color) && !hasAnyLegalMove(color);
 }
 
+function isStalemate(color) {
+    return !isKingInCheck(color) && !hasAnyLegalMove(color);
+}
+
 function checkGameEndState() {
     if (chessGameOver) return;
 
@@ -211,7 +215,11 @@ function checkGameEndState() {
     if (turnToCheck && isCheckmate(turnToCheck)) {
         lockBoardAfterCheckmate();
         alert(turnToCheck + " is checkmated!");
+    } else if (turnToCheck && isStalemate(turnToCheck)) {
+        lockBoardAfterCheckmate();
+        alert("Stalemate! The game is a draw.");
     }
+    
 }
 
 // Checks whether a square is on the board
