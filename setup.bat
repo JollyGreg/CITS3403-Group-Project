@@ -34,4 +34,3 @@ echo.
 echo To run the application:
 echo   python app.py
 echo.
-pause

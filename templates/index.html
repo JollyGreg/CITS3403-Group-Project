@@ -106,43 +106,20 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                           <tbody>
-
-<tr>
-    <td><strong>Spring Cup 2026</strong></td>
-    <td>Free</td>
-    <td>32/64</td>
-    <td>
-        {% if current_user.is_authenticated %}
-            <button class="join-btn" onclick="alert('Tournament feature coming soon!')">
-                Join
-            </button>
-        {% else %}
-            <button class="join-btn" onclick="toggleModal(); switchTab('login')">
-                Join
-            </button>
-        {% endif %}
-    </td>
-</tr>
-
-<tr>
-    <td><strong>Beginner's Arena</strong></td>
-    <td>Free</td>
-    <td>12/128</td>
-    <td>
-        {% if current_user.is_authenticated %}
-            <button class="join-btn" onclick="alert('Tournament feature coming soon!')">
-                Join
-            </button>
-        {% else %}
-            <button class="join-btn" onclick="toggleModal(); switchTab('login')">
-                Join
-            </button>
-        {% endif %}
-    </td>
-</tr>
-
-</tbody>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Spring Cup 2026</strong></td>
+                                    <td>Free</td>
+                                    <td>32/64</td>
+                                    <td><button class="join-btn">Join</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Beginner's Arena</strong></td>
+                                    <td>Free</td>
+                                    <td>12/128</td>
+                                    <td><button class="join-btn">Join</button></td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 </section>
