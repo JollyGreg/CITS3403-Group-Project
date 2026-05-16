@@ -85,6 +85,49 @@ function getPieceOnCell(pos) {
     return { type, color, cell };
 }
 
+function promotePawnIfNeeded(cell) {
+    const pieceType = cell.getAttribute("piece-type");
+    const pieceColor = cell.getAttribute("piece-color");
+
+    if (pieceType !== "Pawn") return;
+
+    const position = getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex);
+    const row = position[1];
+
+    const reachedPromotionRank =
+        (pieceColor === "white" && row === 8) ||
+        (pieceColor === "black" && row === 1);
+
+    if (!reachedPromotionRank) return;
+
+    let choice = prompt("Promote pawn to Queen, Rook, Bishop, or Horse?", "Queen");
+
+    if (!choice) {
+        choice = "Queen";
+    }
+
+    choice = choice.trim().toLowerCase();
+
+    const promotionMap = {
+        queen: "Queen",
+        rook: "Rook",
+        bishop: "Bishop",
+        horse: "Horse",
+        knight: "Horse"
+    };
+
+    const promotedPiece = promotionMap[choice] || "Queen";
+
+    cell.setAttribute("piece-type", promotedPiece);
+
+    const img = cell.querySelector("img");
+    if (img) {
+        img.src = chesspieces[promotedPiece][pieceColor];
+    }
+
+    alert(pieceColor + " pawn promoted to " + promotedPiece + "!");
+}
+
 // ─── King safety helpers ─────────────────────────────────────────────
 
 function findKing(color) {
@@ -592,6 +635,8 @@ if (leavesKingInCheck) {
     toCell.setAttribute("piece-color", fromCell.getAttribute("piece-color"));
     toCell.setAttribute("draggable",   "true");
     toCell.setAttribute("moved", "true");
+
+    promotePawnIfNeeded(toCell);
 
     // Re-attach events on destination cell
     toCell.addEventListener('mouseenter', (e) => { mouseEnter(e); });
