@@ -251,6 +251,15 @@ def create_app():
         if loser:
             loser.matches_played += 1
 
+        # Record match in history so it appears on both players' profile pages
+        match = Match(
+            white_player_id=game.player1_id,
+            black_player_id=game.player2_id,
+            result='finished',
+            mode='1v1 Quick Match'
+        )
+        db.session.add(match)
+
         db.session.commit()
         return jsonify({'success': True})
 
