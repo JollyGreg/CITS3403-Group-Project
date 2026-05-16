@@ -1,4 +1,4 @@
-# CITS3402 Online Chess Website
+# CITS3403 Online Chess Website
 
 ### Purpose
 The purpose of this application is to be a platform for users to play chess matches against other online players of a similar skill level. To do this we implement an 'elo' score system. Elo being a numerical value, wins increase a users elo score and vice versa. Users are matched to the user that is closest to them in elo. 

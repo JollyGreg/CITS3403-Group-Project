@@ -251,7 +251,16 @@ def create_app():
             elo_changes = record_match_with_elo(white_player, black_player, result)
             
             # Update and save players
-            db.session.commit()
+            # Record match in history so it appears on both players' profile pages
+        match = Match(
+            white_player_id=game.player1_id,
+            black_player_id=game.player2_id,
+            result='finished',
+            mode='1v1 Quick Match'
+        )
+        db.session.add(match)
+
+        db.session.commit()
             
             return jsonify({
                 'success': True,
