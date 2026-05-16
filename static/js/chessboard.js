@@ -39,12 +39,14 @@ var chesspieces = {
 
 var alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 let dragged = null; // Will hold the <img> element being dragged
+let currentTurn = "white";
+let chessGameOver = false;
 
 // ─── Coordinate helpers ───────────────────────────────────────────────────────
 
 // Returns chess position e.g. ["f", 2] from table cellIndex / rowIndex
 function getPositionFromCell(cellIndex, rowIndex) {
-    return [alpha[cellIndex - 1], (-1 * (rowIndex - 8))];
+    return [alpha[cellIndex], (-1 * (rowIndex - 8))];
 }
 
 // Returns [cellIndex, rowIndex] in the table from a chess position e.g. ["f", 2]
@@ -70,7 +72,7 @@ function getCellElement(pos) {
     if (!colIdx) return null;
     const table = document.getElementById("ChessTable");
     const tableRow = 8 - row; // rank 8 → row index 0, rank 1 → row index 7
-    return table.rows[tableRow].cells[colIdx];
+    return table.rows[tableRow].cells[colIdx - 1];
 }
 
 // Returns piece info on a cell, or null if empty
@@ -81,6 +83,135 @@ function getPieceOnCell(pos) {
     const color = cell.getAttribute("piece-color");
     if (!type) return null;
     return { type, color, cell };
+}
+
+// ─── King safety helpers ─────────────────────────────────────────────
+
+function findKing(color) {
+    for (let row = 1; row <= 8; row++) {
+        for (let col of alpha) {
+            const piece = getPieceOnCell([col, row]);
+            if (piece && piece.type === "King" && piece.color === color) {
+                return [col, row];
+            }
+        }
+    }
+    return null;
+}
+
+function isKingInCheck(color) {
+    const kingPos = findKing(color);
+    if (!kingPos) return false;
+
+    for (let row = 1; row <= 8; row++) {
+        for (let col of alpha) {
+            const piece = getPieceOnCell([col, row]);
+
+            if (piece && piece.color !== color) {
+                const moves = getValidMoves(piece.cell);
+
+                if (moves.some(m => m[0] === kingPos[0] && m[1] === kingPos[1])) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+function hasAnyLegalMove(color) {
+    for (let row = 1; row <= 8; row++) {
+        for (let col of alpha) {
+            const piece = getPieceOnCell([col, row]);
+
+            if (piece && piece.color === color) {
+                const fromCell = piece.cell;
+                const moves = getValidMoves(fromCell);
+
+                for (const move of moves) {
+                    const toCell = getCellElement(move);
+
+                    if (!toCell) continue;
+
+                    const movingColor = fromCell.getAttribute("piece-color");
+
+                    const fromState = {
+                        html: fromCell.innerHTML,
+                        type: fromCell.getAttribute("piece-type"),
+                        color: fromCell.getAttribute("piece-color"),
+                        draggable: fromCell.getAttribute("draggable"),
+                        moved: fromCell.getAttribute("moved")
+                    };
+
+                    const toState = {
+                        html: toCell.innerHTML,
+                        type: toCell.getAttribute("piece-type"),
+                        color: toCell.getAttribute("piece-color"),
+                        draggable: toCell.getAttribute("draggable"),
+                        moved: toCell.getAttribute("moved")
+                    };
+
+                    // simulate move
+                    toCell.innerHTML = fromState.html;
+                    toCell.setAttribute("piece-type", fromState.type);
+                    toCell.setAttribute("piece-color", fromState.color);
+                    toCell.setAttribute("draggable", fromState.draggable || "true");
+                    toCell.setAttribute("moved", "true");
+
+                    fromCell.innerHTML = "";
+                    fromCell.removeAttribute("piece-type");
+                    fromCell.removeAttribute("piece-color");
+                    fromCell.removeAttribute("draggable");
+                    fromCell.removeAttribute("moved");
+
+                    const stillInCheck = isKingInCheck(movingColor);
+
+                    // restore origin
+                    fromCell.innerHTML = fromState.html;
+                    fromCell.setAttribute("piece-type", fromState.type);
+                    fromCell.setAttribute("piece-color", fromState.color);
+                    fromCell.setAttribute("draggable", fromState.draggable || "true");
+                    fromCell.setAttribute("moved", fromState.moved || "false");
+
+                    // restore destination
+                    toCell.innerHTML = toState.html;
+                    if (toState.type) {
+                        toCell.setAttribute("piece-type", toState.type);
+                        toCell.setAttribute("piece-color", toState.color);
+                        toCell.setAttribute("draggable", toState.draggable || "true");
+                        toCell.setAttribute("moved", toState.moved || "false");
+                    } else {
+                        toCell.removeAttribute("piece-type");
+                        toCell.removeAttribute("piece-color");
+                        toCell.removeAttribute("draggable");
+                        toCell.removeAttribute("moved");
+                    }
+
+                    if (!stillInCheck) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+function isCheckmate(color) {
+    return isKingInCheck(color) && !hasAnyLegalMove(color);
+}
+
+function checkGameEndState() {
+    if (chessGameOver) return;
+
+    const turnToCheck = window._currentTurn || currentTurn;
+
+    if (turnToCheck && isCheckmate(turnToCheck)) {
+        lockBoardAfterCheckmate();
+        alert(turnToCheck + " is checkmated!");
+    }
 }
 
 // Checks whether a square is on the board
@@ -117,28 +248,33 @@ function getValidMoves(cell) {
 // They can capture diagonally, but only move straight if the square is empty.
 function getPawnMoves(col, row, color, hasMoved) {
     const moves = [];
-    const dir   = color === "white" ? 1 : -1;
+    const dir = color === "white" ? 1 : -1;
     const colIdx = getIntOfAlpha(col);
 
-    // One step forward — only if square is empty
+    const startingRow = color === "white" ? 2 : 7;
+
     const oneStep = [col, row + dir];
     if (inBounds(oneStep) && !getPieceOnCell(oneStep)) {
         moves.push(oneStep);
 
-        // Two steps from starting rank — only if both squares are empty
         const twoStep = [col, row + 2 * dir];
-        if (!hasMoved && inBounds(twoStep) && !getPieceOnCell(twoStep)) {
+        if (
+            row === startingRow &&
+            !hasMoved &&
+            inBounds(twoStep) &&
+            !getPieceOnCell(twoStep)
+        ) {
             moves.push(twoStep);
         }
     }
 
-    // Diagonal captures
-    const diagOffsets = [-1, 1];
-    for (const dx of diagOffsets) {
+    for (const dx of [-1, 1]) {
         const newColIdx = colIdx + dx;
         if (newColIdx < 1 || newColIdx > 8) continue;
+
         const diagPos = [alpha[newColIdx - 1], row + dir];
         const target = getPieceOnCell(diagPos);
+
         if (target && target.color !== color) {
             moves.push(diagPos);
         }
@@ -251,11 +387,24 @@ function clearHighlights() {
     });
 }
 
+function lockBoardAfterCheckmate() {
+    chessGameOver = true;
+    clearHighlights();
+
+    document.querySelectorAll("#ChessTable img").forEach(img => {
+        img.setAttribute("draggable", "false");
+    });
+}
+
 // ─── Mouse hover (preview moves) ─────────────────────────────────────────────
 
 function mouseEnter(event) {
-    // event.target may be the <img> inside the cell
+    if (chessGameOver) return;
+
     const cell = event.currentTarget;
+
+    if (playerColour && cell.getAttribute('piece-color') !== playerColour) return;
+
     const validMoves = getValidMoves(cell);
     showValidMoves(validMoves);
 }
@@ -267,9 +416,29 @@ function mouseLeave(event) {
 // ─── Drag & Drop (dragging the <img>) ────────────────────────────────────────
 
 function dragstartHandler(event) {
+    if (chessGameOver) {
+    event.preventDefault();
+    return;
+    } 
+
     // event.target is the <img>
     dragged = event.target;
     const cell = dragged.parentElement;
+        
+    //in a multiplayer game, only allow moving your own colour
+    if (playerColour && gameId) {
+        if (cell.getAttribute("piece-color") !== playerColour) {
+            event.preventDefault();
+            dragged = null;
+            return;
+        }
+        if (window._currentTurn !== playerColour) {
+            event.preventDefault();
+            dragged = null;
+            return;
+        }
+    }
+
     console.log(
         "Picked up:", cell.getAttribute("piece-type"),
         "at", getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex)
@@ -283,6 +452,17 @@ function dragoverHandler(event) {
 }
 
 function dropHandler(event) {
+    // sync local turn with server turn
+    if (window._currentTurn) {
+        currentTurn = window._currentTurn;
+    }
+
+    if (chessGameOver) {
+    event.preventDefault();
+    dragged = null;
+    return;
+    }
+
      console.log('playerColour:', playerColour, 'gameId:', gameId);
     // Check if it's this player's turn
     if (playerColour && gameId) {
@@ -327,6 +507,72 @@ function dropHandler(event) {
         dragged = null;
         return;
     }
+    const movingColor = fromCell.getAttribute("piece-color");
+
+const fromState = {
+    html: fromCell.innerHTML,
+    type: fromCell.getAttribute("piece-type"),
+    color: fromCell.getAttribute("piece-color"),
+    draggable: fromCell.getAttribute("draggable"),
+    moved: fromCell.getAttribute("moved")
+};
+
+const toState = {
+    html: toCell.innerHTML,
+    type: toCell.getAttribute("piece-type"),
+    color: toCell.getAttribute("piece-color"),
+    draggable: toCell.getAttribute("draggable"),
+    moved: toCell.getAttribute("moved")
+};
+
+// Simulate move, clear destination first
+toCell.innerHTML = "";
+toCell.removeAttribute("piece-type");
+toCell.removeAttribute("piece-color");
+toCell.removeAttribute("draggable");
+toCell.removeAttribute("moved");
+
+// Then place the moving piece
+toCell.innerHTML = fromState.html;
+toCell.setAttribute("piece-type", fromState.type);
+toCell.setAttribute("piece-color", fromState.color);
+toCell.setAttribute("draggable", fromState.draggable || "true");
+toCell.setAttribute("moved", "true");
+
+fromCell.innerHTML = "";
+fromCell.removeAttribute("piece-type");
+fromCell.removeAttribute("piece-color");
+fromCell.removeAttribute("draggable");
+fromCell.removeAttribute("moved");
+
+const leavesKingInCheck = isKingInCheck(movingColor);
+
+// Restore origin cell
+fromCell.innerHTML = fromState.html;
+fromCell.setAttribute("piece-type", fromState.type);
+fromCell.setAttribute("piece-color", fromState.color);
+fromCell.setAttribute("draggable", fromState.draggable || "true");
+fromCell.setAttribute("moved", fromState.moved || "false");
+
+// Restore destination cell
+toCell.innerHTML = toState.html;
+if (toState.type) {
+    toCell.setAttribute("piece-type", toState.type);
+    toCell.setAttribute("piece-color", toState.color);
+    toCell.setAttribute("draggable", toState.draggable || "true");
+    toCell.setAttribute("moved", toState.moved || "false");
+} else {
+    toCell.removeAttribute("piece-type");
+    toCell.removeAttribute("piece-color");
+    toCell.removeAttribute("draggable");
+    toCell.removeAttribute("moved");
+}
+
+if (leavesKingInCheck) {
+    alert("You cannot make a move that leaves your king in check.");
+    dragged = null;
+    return;
+}
 
     console.log("Moving", fromCell.getAttribute("piece-type"), "from", fromPos, "to", toPos);
     // Save what was on the destination cell BEFORE moving
@@ -357,6 +603,16 @@ function dropHandler(event) {
     fromCell.removeAttribute("draggable");
     fromCell.removeAttribute("moved");
     fromCell.replaceWith(fromCell.cloneNode(false)); // removes old event listeners
+    currentTurn = currentTurn === "white" ? "black" : "white";
+    console.log("Current turn:", currentTurn);
+
+    // Check if opponent is now in check
+    if (isCheckmate(currentTurn)) {
+        lockBoardAfterCheckmate();
+        alert(currentTurn + " is checkmated!");
+    } else if (isKingInCheck(currentTurn)) {
+        alert(currentTurn + " king is in check!");
+    }
 
     clearHighlights();
 
@@ -390,6 +646,7 @@ function dropHandler(event) {
         .then(data => {
             if (data.success) {
                 window._currentTurn = data.current_turn;
+                currentTurn = data.current_turn; // keep local in sync
                 justMoved = true;
             }
         });
@@ -401,11 +658,14 @@ function dropHandler(event) {
 // ─── Board setup ─────────────────────────────────────────────────────────────
 
 function addDragFunctionality(table) {
-    Array.from(table.rows).forEach(row => {
-        Array.from(row.cells).forEach(cell => {
-            cell.addEventListener("dragover",  (e) => { e.preventDefault(); dragoverHandler(e); });
-            cell.addEventListener("drop",      (e) => { e.preventDefault(); dropHandler(e); });
-        });
+    // Use event delegation on the table instead of individual cells
+    table.addEventListener("dragover", (e) => { 
+        e.preventDefault(); 
+        dragoverHandler(e); 
+    });
+    table.addEventListener("drop", (e) => { 
+        e.preventDefault(); 
+        dropHandler(e); 
     });
 }
 
@@ -422,7 +682,7 @@ function loadChessboard(colour) {
             const colIdx     = getIntOfAlpha(colLetter); // 1-based column index
             const tableRowIdx = 8 - rank;                // rank 8 → row 0, rank 1 → row 7
 
-            const cell = table.rows[tableRowIdx].cells[colIdx];
+            const cell = table.rows[tableRowIdx].cells[colIdx - 1];
 
             // Build the img — draggable=true on the img itself, pointer-events:none removed
             cell.innerHTML = `<img src="${svgUrl}" draggable="true" style="width:100%;height:100%;display:block;">`;
@@ -462,5 +722,17 @@ function captureBoardState() {
             }
         });
     });
+
     return state;
 }
+
+setInterval(() => {
+    const table = document.getElementById("ChessTable");
+
+    if (!table || chessGameOver) return;
+
+    const hasPieces = document.querySelector("#ChessTable img");
+    if (!hasPieces) return;
+
+    checkGameEndState();
+}, 1000);

@@ -46,28 +46,28 @@
 
         <div class="main-layout" style="display: flex; justify-content: center; align-items: center;">
             <div class="panel" style="padding: 40px; background-color: var(--bg-main); border: none;">
-             <table id="ChessTable">
-                    <tr> <th class="axis">8</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                    <tr> <th class="axis">7</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                    <tr> <th class="axis">6</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                    <tr> <th class="axis">5</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                    <tr> <th class="axis">4</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                    <tr> <th class="axis">3</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                    <tr> <th class="axis">2</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                    <tr> <th class="axis">1</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                
-                    <tr>
-                        <th class="axis"></th> 
-                        <th class="axis">a</th> 
-                        <th class="axis">b</th> 
-                        <th class="axis">c</th> 
-                        <th class="axis">d</th> 
-                        <th class="axis">e</th> 
-                        <th class="axis">f</th> 
-                        <th class="axis">g</th> 
-                        <th class="axis">h</th>
-                    </tr>
-                </table>
+             <div class="board-wrapper">
+                <div class="rank-labels" id="rankLabels">
+                    <span>8</span><span>7</span><span>6</span><span>5</span>
+                    <span>4</span><span>3</span><span>2</span><span>1</span>
+                </div>
+                <div class="board-container">
+                    <table id="ChessTable">
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                    </table>
+                    <div class="file-labels" id="fileLabels">
+                        <span>a</span><span>b</span><span>c</span><span>d</span>
+                        <span>e</span><span>f</span><span>g</span><span>h</span>
+                    </div>
+                </div>
+                </div>
             </div>
         </div>
     </main>

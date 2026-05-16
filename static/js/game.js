@@ -46,6 +46,24 @@ function checkGameStatus() {
         });
 }
 
+function flipBoardForBlack() {
+    const table = document.getElementById('ChessTable');
+    table.style.transform = 'rotate(180deg)';
+    
+    //counter-rotate all images so pieces appear right-side up
+    document.querySelectorAll('#ChessTable img').forEach(img => {
+        img.style.transform = 'rotate(180deg)';
+    });
+    
+    // Reverse rank labels
+    const rankLabels = document.getElementById('rankLabels');
+    rankLabels.innerHTML = '<span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>';
+    // Reverse file labels
+    const fileLabels = document.getElementById('fileLabels');
+    fileLabels.innerHTML = '<span>h</span><span>g</span><span>f</span><span>e</span><span>d</span><span>c</span><span>b</span><span>a</span>';
+
+}
+
 //starts the game - shows the board and chat
 function startGame() {
     document.getElementById('gameLobby').style.display = 'none';
@@ -58,6 +76,11 @@ function startGame() {
 
     //set initial turn to white
     window._currentTurn = 'white';
+
+    // Flip board if playing as black
+    if (playerColour === 'black') {
+        flipBoardForBlack();
+    }
 
     //fetch initial game state immediately
     pollGameState();
@@ -89,6 +112,9 @@ function pollGameState() {
             //only apply board state if opponent moved (not after our own move)
             if (data.board_state && !justMoved) {
                 applyBoardState(data.board_state);
+                if (playerColour === 'black') {
+                    flipBoardForBlack();
+                }
             }
             justMoved = false;
         });
@@ -137,7 +163,7 @@ function applyBoardState(state) {
         const row = parseInt(pos[1]);
         const colIdx = getIntOfAlpha(col);
         const tableRowIdx = 8 - row;
-        const cell = table.rows[tableRowIdx].cells[colIdx];
+        const cell = table.rows[tableRowIdx].cells[colIdx - 1];
 
         const svgUrl = chesspieces[piece.type][piece.color];
         cell.innerHTML = `<img src="${svgUrl}" draggable="true" style="width:100%;height:100%;display:block;">`;
@@ -146,6 +172,12 @@ function applyBoardState(state) {
         cell.setAttribute('draggable', 'true');
         const startingRank = piece.color === 'white' ? 2 : 7;
         cell.setAttribute('moved', row !== startingRank ? 'true' : 'false');
+
+        // Counter-rotate image if playing as black
+        if (playerColour === 'black') {
+            const pieceImg = cell.querySelector('img');
+            if (pieceImg) pieceImg.style.transform = 'rotate(180deg)';
+        }
 
         cell.addEventListener('mouseenter', mouseEnter);
         cell.addEventListener('mouseleave', mouseLeave);

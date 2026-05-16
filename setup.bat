@@ -14,6 +14,13 @@ if errorlevel 1 (
     exit /b 1
 )
 
+echo Removing potential existing database...
+del "instance\chess.db"
+if errorlevel 1 (
+    echo Error removing database
+    echo continuing...
+)
+
 echo Initializing database...
 python db.py
 if errorlevel 1 (
@@ -27,4 +34,3 @@ echo.
 echo To run the application:
 echo   python app.py
 echo.
-pause

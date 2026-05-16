@@ -6,9 +6,6 @@ body {
 
 table {
     border: 6px solid #4b2e14;
-    margin: 40px auto;
-    width: 70vh;
-    height: 70vh;
     border-collapse: collapse;
     background-color: white;
 }
@@ -51,27 +48,27 @@ td svg {
 }
 
 td:nth-child(odd) {
-    background-color: #f0d9b5;
+    background-color: #b58863;
 }
 
 td:nth-child(even) {
-    background-color: #b58863;
+    background-color: #f0d9b5;
 }
 
 tr:nth-child(odd) td:nth-child(even) {
-    background-color: #f0d9b5;
+    background-color: #b58863;
 }
 
 tr:nth-child(odd) td:nth-child(odd) {
-    background-color: #b58863;
+    background-color: #f0d9b5;
 }
 
 tr:nth-child(even) td:nth-child(even) {
-    background-color: #b58863;
+    background-color: #f0d9b5;
 }
 
 tr:nth-child(even) td:nth-child(odd) {
-    background-color: #f0d9b5;
+    background-color: #b58863;
 }
 
 .axis {
@@ -98,4 +95,65 @@ td.capture-highlight {
     background-color: rgba(220, 50, 50, 0.55) !important;
     outline: 2px solid rgba(220, 50, 50, 0.8);
     outline-offset: -2px;
+}
+
+/* Board wrapper layout */
+.board-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+/* Rank numbers on the left */
+.rank-labels {
+    display: flex;
+    flex-direction: column;
+    margin-right: 8px;
+    margin-bottom: 38px;
+}
+
+.rank-labels span {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    width: 30px;
+}
+
+/* Board container holds table and file labels */
+.board-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* File letters on the bottom */
+.file-labels {
+    display: flex;
+    flex-direction: row;
+    margin-top: 8px;
+    width: 480px;
+    justify-content: space-around;
+}
+
+.file-labels span {
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    height: 30px;
+    flex: 1;
+}
+
+.board-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: #2d5016;
+    padding: 8px;
 }
