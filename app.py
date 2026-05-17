@@ -302,6 +302,23 @@ def create_app():
             'timestamp': msg.timestamp.strftime('%H:%M')
         }, room=f'game_{game_id}')
 
+    @socketio.on('draw_offer')
+    def handle_draw_offer(data):
+        game_id = data['game_id']
+        # Broadcast to the room; the sender's client filters by username
+        emit('draw_offered', {
+            'from': data['from'],
+            'game_id': game_id
+        }, room=f'game_{game_id}')
+
+    @socketio.on('draw_response')
+    def handle_draw_response(data):
+        game_id = data['game_id']
+        emit('draw_responded', {
+            'accepted': data['accepted'],
+            'from': data['from']
+        }, room=f'game_{game_id}')
+
     # Handles game over with ELO updates, records match history, then broadcasts game over message
     @socketio.on('end_game')
     def handle_end_game(data):

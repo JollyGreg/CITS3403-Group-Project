@@ -157,3 +157,36 @@ td.capture-highlight {
     background-color: #2d5016;
     padding: 8px;
 }
+
+.game-action-btn {
+    padding: 11px 28px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: transform 0.12s, opacity 0.12s, box-shadow 0.12s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+.game-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 16px rgba(0,0,0,0.28);
+}
+.game-action-btn:active {
+    transform: translateY(0);
+}
+.game-action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+.draw-btn {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #1a1200;
+}
+.forfeit-btn {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: #fff;
+}
