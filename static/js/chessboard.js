@@ -167,7 +167,7 @@ function promotePawnIfNeeded(cell) {
         img.src = chesspieces[promotedPiece][pieceColor];
     }
 
-    alert(pieceColor + " pawn promoted to " + promotedPiece + "!");
+    showGameMessage(pieceColor + " pawn promoted to " + promotedPiece + "!");
 }
 
 // ─── King safety helpers ─────────────────────────────────────────────
