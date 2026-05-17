@@ -138,6 +138,29 @@ def create_app():
                 match.opponent_name = match.white_player.username if match.white_player else 'Unknown'
 
         return render_template("profile.html", current_user=current_user, recent_matches=recent_matches)
+        
+    @app.route("/user/<username>")
+    def user_profile(username):
+        
+        user = User.query.filter_by(username=username).first_or_404()
+    
+    
+        recent_matches = Match.query.filter(
+            (Match.white_player_id == user.id) | 
+            (Match.black_player_id == user.id)
+        ).order_by(Match.date.desc()).limit(10).all()
+
+        for match in recent_matches:
+            if match.white_player_id == user.id:
+                match.opponent_name = match.black_player.username if match.black_player else 'Unknown'
+            else:
+                match.opponent_name = match.white_player.username if match.white_player else 'Unknown'
+
+    
+        return render_template("user_profile.html", profile_user=user, recent_matches=recent_matches)
+
+
+        
 
     # --- Game API Routes ---
 
