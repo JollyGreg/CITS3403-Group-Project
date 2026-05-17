@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from models import db, User, Match, Game, Message
 from forms import LoginForm, RegisterForm
+from elo import record_match_with_elo
 
 load_dotenv()
 
@@ -40,11 +41,10 @@ def create_app():
 
     @app.route("/")
     def index():
-        # Initialize forms to be rendered in the index.html modal
         login_form = LoginForm()
         register_form = RegisterForm()
-        # Query top 5 users by wins for the leaderboard
-        top_users = User.query.order_by(User.wins.desc()).limit(5).all()
+        # Top 5 users by ELO for the leaderboard
+        top_users = User.query.order_by(User.elo_rating.desc()).limit(5).all()
         return render_template("index.html", 
                                current_user=current_user, 
                                login_form=login_form, 
@@ -54,7 +54,6 @@ def create_app():
     @app.route("/login", methods=['GET', 'POST'])
     def login():
         form = LoginForm()
-        # validate_on_submit handles CSRF token check and form validation
         if form.validate_on_submit():
             user = User.query.filter_by(username=form.username.data).first()
             if user and user.check_password(form.password.data):
@@ -62,7 +61,6 @@ def create_app():
                 return redirect(url_for('index'))
             flash("Invalid username or password.", "danger")
         else:
-            # Flash validation errors
             for field, errors in form.errors.items():
                 for error in errors:
                     flash(f"{field}: {error}", "danger")
@@ -72,25 +70,18 @@ def create_app():
     def register():
         form = RegisterForm()
         if form.validate_on_submit():
-            # Check if username already exists
             if User.query.filter_by(username=form.username.data).first():
                 flash("Username already exists.", "danger")
                 return redirect(url_for('index'))
             
-            # Create new user and hash password
             user = User(username=form.username.data, email=form.email.data)
             user.set_password(form.password.data)
-            
-            # Save to database
             db.session.add(user)
             db.session.commit()
-            
-            # Log the user in immediately after registration
             login_user(user)
             flash("Account created successfully!", "success")
             return redirect(url_for('index'))
         else:
-            # Flash validation errors
             for field, errors in form.errors.items():
                 for error in errors:
                     flash(f"{field}: {error}", "danger")
@@ -110,13 +101,11 @@ def create_app():
     @app.route("/profile")
     @login_required
     def profile():
-        # Query recent matches where the current user was either white or black player
         recent_matches = Match.query.filter(
             (Match.white_player_id == current_user.id) | 
             (Match.black_player_id == current_user.id)
         ).order_by(Match.date.desc()).limit(10).all()
 
-        # Add opponent name to each match for display
         for match in recent_matches:
             if match.white_player_id == current_user.id:
                 match.opponent_name = match.black_player.username if match.black_player else 'Unknown'
@@ -125,17 +114,15 @@ def create_app():
 
         return render_template("profile.html", current_user=current_user, recent_matches=recent_matches)
 
-    # Game API Routes 
+    # --- Game API Routes ---
 
     @app.route('/api/game/create', methods=['POST'])
     @login_required
     def create_game():
-        # Check if player already has a waiting game
         existing = Game.query.filter_by(player1_id=current_user.id, status='waiting').first()
         if existing:
             return jsonify({'success': True, 'game_id': existing.id, 'status': 'waiting'})
         
-        # Create a new game and wait for opponent
         game = Game(player1_id=current_user.id, status='waiting')
         db.session.add(game)
         db.session.commit()
@@ -144,7 +131,6 @@ def create_app():
     @app.route('/api/game/join', methods=['POST'])
     @login_required
     def join_game():
-        # Find a waiting game that the current user didn't create
         game = Game.query.filter_by(status='waiting').filter(
             Game.player1_id != current_user.id
         ).first()
@@ -152,7 +138,6 @@ def create_app():
         if not game:
             return jsonify({'success': False, 'message': 'No games available'})
         
-        # Join the game as player 2
         game.player2_id = current_user.id
         game.status = 'active'
         db.session.commit()
@@ -171,7 +156,6 @@ def create_app():
     def get_game_state(game_id):
         game = Game.query.get_or_404(game_id)
         
-        # Only players in this game can see state
         if current_user.id not in [game.player1_id, game.player2_id]:
             return jsonify({'error': 'Not a player in this game'}), 403
         
@@ -190,21 +174,15 @@ def create_app():
     def make_move(game_id):
         game = Game.query.get_or_404(game_id)
         
-        # Verify player is in this game
         if current_user.id not in [game.player1_id, game.player2_id]:
             return jsonify({'error': 'Not a player in this game'}), 403
         
-        # Verify it is this player's turn
         player_colour = 'white' if game.player1_id == current_user.id else 'black'
         if game.current_turn != player_colour:
             return jsonify({'success': False, 'message': 'Not your turn'})
         
         data = request.get_json()
-        
-        # Save the new board state
         game.set_board(data['board_state'])
-        
-        # Switch turns
         game.current_turn = 'black' if game.current_turn == 'white' else 'white'
         db.session.commit()
         
@@ -215,11 +193,9 @@ def create_app():
     def get_messages(game_id):
         game = Game.query.get_or_404(game_id)
         
-        # Only players in this game can see messages
         if current_user.id not in [game.player1_id, game.player2_id]:
             return jsonify({'error': 'Not a player in this game'}), 403
         
-        # Fetch messages for this specific game
         messages = Message.query.filter_by(game_id=game_id).order_by(Message.timestamp.asc()).all()
         return jsonify([{
             'sender': m.sender.username,
@@ -232,7 +208,6 @@ def create_app():
     def send_message(game_id):
         game = Game.query.get_or_404(game_id)
         
-        # Only players in this game can send messages
         if current_user.id not in [game.player1_id, game.player2_id]:
             return jsonify({'error': 'Not a player in this game'}), 403
         
@@ -246,23 +221,48 @@ def create_app():
     @login_required
     def end_game(game_id):
         game = Game.query.get_or_404(game_id)
-        
-        # Mark game as finished
+
+        # Only players in this game can end it
+        if current_user.id not in [game.player1_id, game.player2_id]:
+            return jsonify({'error': 'Not a player in this game'}), 403
+
+        # Ignore if already finished (prevents duplicate calls)
+        if game.status == 'finished':
+            return jsonify({'success': False, 'message': 'Game already finished'})
+
+        data = request.get_json()
+        # Expects: 'white_win' | 'black_win' | 'draw'
+        result = data.get('result', 'draw')
+        if result not in ('white_win', 'black_win', 'draw'):
+            return jsonify({'success': False, 'message': f'Invalid result: {result}'}), 400
+
+        white_player = User.query.get(game.player1_id)
+        black_player = User.query.get(game.player2_id)
+
+        if not white_player or not black_player:
+            return jsonify({'success': False, 'message': 'Players not found'}), 404
+
+        # Snapshot ELO BEFORE updating so the Match row records the delta correctly
+        white_elo_before = white_player.elo_rating
+        black_elo_before = black_player.elo_rating
+
+        elo_changes = record_match_with_elo(white_player, black_player, result)
+
+        # Persist match with full ELO history
+        match = Match(
+            white_player_id=game.player1_id,
+            black_player_id=game.player2_id,
+            result=result,
+            mode='1v1 Quick Match',
+            white_elo_before=white_elo_before,
+            white_elo_after=white_player.elo_rating,
+            black_elo_before=black_elo_before,
+            black_elo_after=black_player.elo_rating,
+        )
+        db.session.add(match)
+
+        # Mark the game as finished
         game.status = 'finished'
-
-        # Update winner's stats
-        winner_id = game.player1_id if game.current_turn == 'black' else game.player2_id
-        winner = User.query.get(winner_id)
-        if winner:
-            winner.wins += 1
-            winner.matches_played += 1
-    
-        # Update loser's stats
-        loser_id = game.player2_id if winner_id == game.player1_id else game.player1_id
-        loser = User.query.get(loser_id)
-        if loser:
-            loser.matches_played += 1
-
         db.session.commit()
         return jsonify({'success': True})
 
@@ -302,37 +302,42 @@ def create_app():
             'timestamp': msg.timestamp.strftime('%H:%M')
         }, room=f'game_{game_id}')
 
-    # Handles game over, updates win/loss stats, records match history, then broadcasts game over message to both players in the game room
+    # Handles game over with ELO updates, records match history, then broadcasts game over message
     @socketio.on('end_game')
     def handle_end_game(data):
         game_id = data['game_id']
         game = Game.query.get(game_id)
-        if not game:
+        if not game or game.status == 'finished':
             return
-        game.status = 'finished'
-        winner_id = game.player1_id if game.current_turn == 'black' else game.player2_id
-        winner = User.query.get(winner_id)
-        if winner:
-            winner.wins += 1
-            winner.matches_played += 1
-        loser_id = game.player2_id if winner_id == game.player1_id else game.player1_id
-        loser = User.query.get(loser_id)
-        if loser:
-            loser.matches_played += 1
-        # Record match in history so it appears on both players profile pages
+        result = data.get('result', 'white_win')
+        white_player = User.query.get(game.player1_id)
+        black_player = User.query.get(game.player2_id)
+        if not white_player or not black_player:
+            return
+        white_elo_before = white_player.elo_rating
+        black_elo_before = black_player.elo_rating
+        elo_changes = record_match_with_elo(white_player, black_player, result)
         match = Match(
             white_player_id=game.player1_id,
             black_player_id=game.player2_id,
-            result='finished',
-            mode='1v1 Quick Match'
+            result=result,
+            mode='1v1 Quick Match',
+            white_elo_before=white_elo_before,
+            white_elo_after=white_player.elo_rating,
+            black_elo_before=black_elo_before,
+            black_elo_after=black_player.elo_rating,
         )
         db.session.add(match)
+        game.status = 'finished'
         db.session.commit()
         emit('game_over', {
-            'message': f'{data["winner"]} wins!'
+            'message': f'{data.get("winner", "Someone")} wins!',
+            'white_elo_change': elo_changes['white_change'],
+            'black_elo_change': elo_changes['black_change']
         }, room=f'game_{game_id}')
 
     return app
+
 
 app = create_app()
 
