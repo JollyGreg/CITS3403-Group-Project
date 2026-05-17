@@ -11,3 +11,4 @@ selenium
 webdriver-manager
 flask-socketio
 eventlet
+Flask-Migrate

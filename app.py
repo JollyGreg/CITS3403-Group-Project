@@ -4,6 +4,7 @@ from flask import Flask, render_template, redirect, url_for, request, flash, jso
 from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
 from flask_socketio import SocketIO, emit, join_room
+from flask_migrate import Migrate
 
 # Ensure the current directory is in the path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -27,6 +28,7 @@ def create_app():
     
     # Initialize extensions
     db.init_app(app)
+    migrate = Migrate(app, db) 
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'login'
