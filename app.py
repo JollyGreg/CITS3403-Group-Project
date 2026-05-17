@@ -395,11 +395,24 @@ def create_app():
         db.session.add(match)
         game.status = 'finished'
         db.session.commit()
+
+        # Set appropriate message based on result
+        if result == 'draw':
+            message = "It's a draw! No one wins."
+        else:
+            message = f'{data.get("winner", "Someone")} wins!'
+
         emit('game_over', {
-            'message': f'{data.get("winner", "Someone")} wins!',
+            'message': message,
             'white_elo_change': elo_changes['white_change'],
             'black_elo_change': elo_changes['black_change']
         }, room=f'game_{game_id}')
+
+    @socketio.on('king_in_check')
+    def handle_check(data):
+        emit('check_notification', {
+            'colour': data['colour']
+        }, room=f'game_{data["game_id"]}') 
 
     return app
 
