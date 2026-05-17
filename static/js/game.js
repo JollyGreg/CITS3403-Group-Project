@@ -280,3 +280,8 @@ socket.on('draw_responded', (data) => {
         }
     }
 });
+
+// Listen for check notification from server
+socket.on('check_notification', (data) => {
+    showGameMessage(data.colour + ' king is in check!');
+});

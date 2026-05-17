@@ -316,6 +316,13 @@ function checkGameEndState() {
     if (isInsufficientMaterial()) {
         lockBoardAfterCheckmate();
         showGameMessage("Draw by insufficient material.");
+        if (gameId) {
+            socket.emit('end_game', {
+                game_id: gameId,
+                result: 'draw',
+                winner: null
+            });
+        }
         return;
     }
 
@@ -323,9 +330,25 @@ function checkGameEndState() {
     if (turnToCheck && isCheckmate(turnToCheck)) {
         lockBoardAfterCheckmate();
         showGameMessage(turnToCheck + " is checkmated!");
+        if (gameId) {
+            const winner = turnToCheck === 'white' ? 'black' : 'white';
+            const result = winner === 'white' ? 'white_win' : 'black_win';
+            socket.emit('end_game', {
+                game_id: gameId,
+                result: result,
+                winner: winner
+            });
+        }
     } else if (turnToCheck && isStalemate(turnToCheck)) {
         lockBoardAfterCheckmate();
         showGameMessage("Stalemate! The game is a draw.");
+        if (gameId) {
+            socket.emit('end_game', {
+                game_id: gameId,
+                result: 'draw',
+                winner: null
+            });
+        }
     }
     
 }
@@ -749,8 +772,25 @@ if (leavesKingInCheck) {
     if (isCheckmate(currentTurn)) {
         lockBoardAfterCheckmate();
         showGameMessage(currentTurn + " is checkmated!");
+    // Tell the server the game is over
+    if (gameId) {
+        const winner = currentTurn === 'white' ? 'black' : 'white';
+        const result = winner === 'white' ? 'white_win' : 'black_win';
+        socket.emit('end_game', {
+            game_id: gameId,
+            result: result,
+            winner: winner
+        });
+    }
     } else if (isKingInCheck(currentTurn)) {
         showGameMessage(currentTurn + " king is in check!");
+        // Notify both players
+        if (gameId) {
+            socket.emit('king_in_check', {
+                game_id: gameId,
+                colour: currentTurn
+            });
+        }
     }
 
     clearHighlights();
