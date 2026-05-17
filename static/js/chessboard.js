@@ -292,10 +292,33 @@ function isStalemate(color) {
     return !isKingInCheck(color) && !hasAnyLegalMove(color);
 }
 
+function isInsufficientMaterial() {
+    const pieces = [];
+
+    for (let row = 1; row <= 8; row++) {
+        for (let col of alpha) {
+            const piece = getPieceOnCell([col, row]);
+            if (piece) {
+                pieces.push(piece);
+            }
+        }
+    }
+
+    return pieces.length === 2 &&
+        pieces.every(piece => piece.type === "King");
+}
+
 function checkGameEndState() {
     if (chessGameOver) return;
 
     const turnToCheck = window._currentTurn || currentTurn;
+
+    if (isInsufficientMaterial()) {
+        lockBoardAfterCheckmate();
+        showGameMessage("Draw by insufficient material.");
+        return;
+    }
+
 
     if (turnToCheck && isCheckmate(turnToCheck)) {
         lockBoardAfterCheckmate();
@@ -713,6 +736,16 @@ if (leavesKingInCheck) {
     console.log("Current turn:", currentTurn);
 
     // Check if opponent is now in check
+
+    if (isInsufficientMaterial()) {
+        lockBoardAfterCheckmate();
+        showGameMessage("Draw by insufficient material.");
+        clearHighlights();
+        dragged = null;
+        dragInProgress = false;
+        return;
+    }
+
     if (isCheckmate(currentTurn)) {
         lockBoardAfterCheckmate();
         showGameMessage(currentTurn + " is checkmated!");
