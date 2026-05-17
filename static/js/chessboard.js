@@ -43,6 +43,46 @@ var alpha = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 let dragged = null; // Will hold the <img> element being dragged
 let currentTurn = "white";
 let chessGameOver = false;
+let gameMessageTimeout = null;
+
+function showGameMessage(message) {
+    let messageBox = document.getElementById("game-status-message");
+
+    if (!messageBox) {
+        messageBox = document.createElement("div");
+        messageBox.id = "game-status-message";
+
+        messageBox.style.position = "fixed";
+        messageBox.style.top = "90px";
+        messageBox.style.left = "50%";
+        messageBox.style.transform = "translateX(-50%)";
+        messageBox.style.zIndex = "9999";
+
+        messageBox.style.padding = "12px 20px";
+        messageBox.style.border = "1px solid #3b82f6";
+        messageBox.style.borderRadius = "10px";
+        messageBox.style.backgroundColor = "#1f2937";
+        messageBox.style.color = "#ffffff";
+        messageBox.style.fontWeight = "600";
+        messageBox.style.textAlign = "center";
+        messageBox.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.25)";
+        messageBox.style.maxWidth = "600px";
+
+        document.body.appendChild(messageBox);
+    }
+
+    messageBox.textContent = message;
+    messageBox.style.display = "block";
+
+    if (gameMessageTimeout) {
+        clearTimeout(gameMessageTimeout);
+    }
+
+    gameMessageTimeout = setTimeout(() => {
+        messageBox.style.display = "none";
+        gameMessageTimeout = null;
+    }, 3000);
+}
 
 // ─── Coordinate helpers ───────────────────────────────────────────────────────
 
@@ -127,7 +167,7 @@ function promotePawnIfNeeded(cell) {
         img.src = chesspieces[promotedPiece][pieceColor];
     }
 
-    alert(pieceColor + " pawn promoted to " + promotedPiece + "!");
+    showGameMessage(pieceColor + " pawn promoted to " + promotedPiece + "!");
 }
 
 // ─── King safety helpers ─────────────────────────────────────────────
@@ -259,10 +299,10 @@ function checkGameEndState() {
 
     if (turnToCheck && isCheckmate(turnToCheck)) {
         lockBoardAfterCheckmate();
-        alert(turnToCheck + " is checkmated!");
+        showGameMessage(turnToCheck + " is checkmated!");
     } else if (turnToCheck && isStalemate(turnToCheck)) {
         lockBoardAfterCheckmate();
-        alert("Stalemate! The game is a draw.");
+        showGameMessage("Stalemate! The game is a draw.");
     }
     
 }
@@ -634,7 +674,7 @@ if (toState.type) {
 }
 
 if (leavesKingInCheck) {
-    alert("You cannot make a move that leaves your king in check.");
+    showGameMessage("You cannot make a move that leaves your king in check.");
     dragged = null;
     dragInProgress = false;
     return;
@@ -675,9 +715,9 @@ if (leavesKingInCheck) {
     // Check if opponent is now in check
     if (isCheckmate(currentTurn)) {
         lockBoardAfterCheckmate();
-        alert(currentTurn + " is checkmated!");
+        showGameMessage(currentTurn + " is checkmated!");
     } else if (isKingInCheck(currentTurn)) {
-        alert(currentTurn + " king is in check!");
+        showGameMessage(currentTurn + " king is in check!");
     }
 
     clearHighlights();
