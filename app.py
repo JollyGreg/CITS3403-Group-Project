@@ -64,7 +64,15 @@ def create_app():
             for field, errors in form.errors.items():
                 for error in errors:
                     flash(f"{field}: {error}", "danger")
-        return redirect(url_for('index'))
+        #When the login fails, do not refresh the page. Instead, re-render the home page with the original data.
+        register_form = RegisterForm()
+        top_users = User.query.order_by(User.elo_rating.desc()).limit(5).all()
+        return render_template("index.html", 
+                               current_user=current_user, 
+                               login_form=form, 
+                               register_form=register_form,
+                               top_users=top_users,
+                               active_tab='login') #Keep the login page open
 
     @app.route("/register", methods=['POST'])
     def register():
@@ -72,7 +80,16 @@ def create_app():
         if form.validate_on_submit():
             if User.query.filter_by(username=form.username.data).first():
                 flash("Username already exists.", "danger")
-                return redirect(url_for('index'))
+
+                #If the username already exists, do not refresh the page.
+                login_form = LoginForm()
+                top_users = User.query.order_by(User.elo_rating.desc()).limit(5).all()
+                return render_template("index.html", 
+                                       current_user=current_user, 
+                                       login_form=login_form, 
+                                       register_form=form, 
+                                       top_users=top_users, 
+                                       active_tab='register') #Keep the registration page open
             
             user = User(username=form.username.data, email=form.email.data)
             user.set_password(form.password.data)
@@ -85,7 +102,15 @@ def create_app():
             for field, errors in form.errors.items():
                 for error in errors:
                     flash(f"{field}: {error}", "danger")
-        return redirect(url_for('index'))
+        #If the password is too weak and the verification fails, the page will not be refreshed either.
+        login_form = LoginForm()
+        top_users = User.query.order_by(User.elo_rating.desc()).limit(5).all()
+        return render_template("index.html", 
+                               current_user=current_user, 
+                               login_form=login_form, 
+                               register_form=form,
+                               top_users=top_users,
+                               active_tab='register')
 
     @app.route("/play")
     @login_required
