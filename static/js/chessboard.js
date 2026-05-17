@@ -299,10 +299,10 @@ function checkGameEndState() {
 
     if (turnToCheck && isCheckmate(turnToCheck)) {
         lockBoardAfterCheckmate();
-        alert(turnToCheck + " is checkmated!");
+        showGameMessage(turnToCheck + " is checkmated!");
     } else if (turnToCheck && isStalemate(turnToCheck)) {
         lockBoardAfterCheckmate();
-        alert("Stalemate! The game is a draw.");
+        showGameMessage("Stalemate! The game is a draw.");
     }
     
 }
@@ -715,7 +715,7 @@ if (leavesKingInCheck) {
     // Check if opponent is now in check
     if (isCheckmate(currentTurn)) {
         lockBoardAfterCheckmate();
-        alert(currentTurn + " is checkmated!");
+        showGameMessage(currentTurn + " is checkmated!");
     } else if (isKingInCheck(currentTurn)) {
         showGameMessage(currentTurn + " king is in check!");
     }
