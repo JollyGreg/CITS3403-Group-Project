@@ -44,6 +44,31 @@ let dragged = null; // Will hold the <img> element being dragged
 let currentTurn = "white";
 let chessGameOver = false;
 
+function showGameMessage(message) {
+    let messageBox = document.getElementById("game-status-message");
+
+    if (!messageBox) {
+        messageBox = document.createElement("div");
+        messageBox.id = "game-status-message";
+        messageBox.style.padding = "10px";
+        messageBox.style.margin = "10px 0";
+        messageBox.style.border = "1px solid #ccc";
+        messageBox.style.borderRadius = "6px";
+        messageBox.style.backgroundColor = "#f8f9fa";
+        messageBox.style.fontWeight = "500";
+        messageBox.style.textAlign = "center";
+
+        const board = document.getElementById("ChessTable");
+        if (board && board.parentNode) {
+            board.parentNode.insertBefore(messageBox, board);
+        } else {
+            document.body.prepend(messageBox);
+        }
+    }
+
+    messageBox.textContent = message;
+}
+
 // ─── Coordinate helpers ───────────────────────────────────────────────────────
 
 // Returns chess position e.g. ["f", 2] from table cellIndex / rowIndex
