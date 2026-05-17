@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Project - My Profile</title>
+    <title>Chess Master - My Profile</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
 </head>
 <body>
 
@@ -16,29 +15,46 @@
     </nav>
 
     <div class="container">
-        
+
+        <!-- Top panel -->
         <div class="panel top-panel">
+
             <div class="profile-avatar"></div>
-            
+
             <div class="user-details">
                 <h2>{{ current_user.username }}</h2>
-                <p>Player Account: ID-{{ current_user.id }}</p>
+                <p>Player ID: {{ current_user.id }}</p>
+                <p>ELO: <span class="elo-val">{{ current_user.elo_rating }}</span></p>
             </div>
-            
+
             <button class="btn-edit">Edit Profile</button>
 
-            <div class="stats-box">
-                <div class="stat-item">
-                    <h3>{{ current_user.matches_played | default(0) }}</h3>
-                    <p>Matches</p>
+            <div class="stats-row">
+                <div class="stat-pill">
+                    <span class="stat-val">{{ current_user.matches_played | default(0) }}</span>
+                    <span class="stat-label">Matches</span>
                 </div>
-                <div class="stat-item">
-                    <h3>{{ current_user.win_rate | default(0) }}%</h3>
-                    <p>Win Rate</p>
+                <div class="stat-pill">
+                    <span class="stat-val">{{ current_user.wins | default(0) }}</span>
+                    <span class="stat-label">Wins</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-val">{{ current_user.losses | default(0) }}</span>
+                    <span class="stat-label">Losses</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-val">{{ current_user.draws | default(0) }}</span>
+                    <span class="stat-label">Draws</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-val">{{ current_user.win_rate | default(0) }}%</span>
+                    <span class="stat-label">Win Rate</span>
                 </div>
             </div>
+
         </div>
 
+        <!-- Match history panel -->
         <div class="panel bottom-panel">
             <h3>Recent Match History</h3>
             <table class="history-table">
@@ -46,30 +62,62 @@
                     <tr>
                         <th>Date</th>
                         <th>Opponent</th>
+                        <th>Colour</th>
                         <th>Game Mode</th>
-                        <th>Result</th>
+                        <th style="text-align:right;">ELO Change</th>
+                        <th style="text-align:right;">Result</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for match in recent_matches %}
+
+                    {% set playing_white = match.white_player_id == current_user.id %}
+
+                    {% if playing_white %}
+                        {% set won        = match.result == 'white_win' %}
+                        {% set lost       = match.result == 'black_win' %}
+                        {% set elo_change = (match.white_elo_after or 0) - (match.white_elo_before or 0) %}
+                        {% set has_elo    = match.white_elo_before is not none %}
+                    {% else %}
+                        {% set won        = match.result == 'black_win' %}
+                        {% set lost       = match.result == 'white_win' %}
+                        {% set elo_change = (match.black_elo_after or 0) - (match.black_elo_before or 0) %}
+                        {% set has_elo    = match.black_elo_before is not none %}
+                    {% endif %}
+
                     <tr>
-                        <td>{{ match.date }}</td>
-                        <td>{{ match.opponent_name }}</td>
-                        <td>{{ match.mode }}</td>
-                        <td>
-                            {% if match.result == 'Victory' %}
+                        <td class="col-date">{{ match.date.strftime('%d %b %Y') }}</td>
+                        <td class="col-opponent">{{ match.opponent_name }}</td>
+                        <td class="col-colour">
+                            {% if playing_white %}♔ White{% else %}♚ Black{% endif %}
+                        </td>
+                        <td class="col-mode">{{ match.mode }}</td>
+                        <td class="col-elo">
+                            {% if not has_elo %}
+                                <span class="elo-nil">—</span>
+                            {% elif elo_change > 0 %}
+                                <span class="elo-pos">+{{ elo_change }}</span>
+                            {% elif elo_change < 0 %}
+                                <span class="elo-neg">{{ elo_change }}</span>
+                            {% else %}
+                                <span class="elo-nil">±0</span>
+                            {% endif %}
+                        </td>
+                        <td class="col-result">
+                            {% if won %}
                                 <span class="res-tag win">Victory</span>
-                            {% elif match.result == 'Defeat' %}
+                            {% elif lost %}
                                 <span class="res-tag loss">Defeat</span>
                             {% else %}
                                 <span class="res-tag draw">Draw</span>
                             {% endif %}
                         </td>
                     </tr>
+
                     {% else %}
                     <tr>
-                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
-                            No match history available yet. Go play a game!
+                        <td colspan="6" style="text-align:center; color:var(--text-muted); padding:40px;">
+                            No match history yet — go play a game!
                         </td>
                     </tr>
                     {% endfor %}

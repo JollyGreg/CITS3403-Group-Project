@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chessboard.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbox.css') }}">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/chessboard.js') }}"></script>
 </head>
 <body>
@@ -23,39 +24,86 @@
         </div>
     </nav>
 
-    <main class="main-layout" style="display: flex; justify-content: center; align-items: center;">
-        <div class="panel" style="padding: 40px; background-color: var(--bg-main); border: none;">
-            <table id="ChessTable">
-                <tr> <th class="axis">8</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                <tr> <th class="axis">7</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                <tr> <th class="axis">6</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                <tr> <th class="axis">5</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                <tr> <th class="axis">4</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                <tr> <th class="axis">3</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                <tr> <th class="axis">2</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                <tr> <th class="axis">1</th> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>
-                <tr>
-                    <th class="axis"></th> 
-                    <th class="axis">a</th> 
-                    <th class="axis">b</th> 
-                    <th class="axis">c</th> 
-                    <th class="axis">d</th> 
-                    <th class="axis">e</th> 
-                    <th class="axis">f</th> 
-                    <th class="axis">g</th> 
-                    <th class="axis">h</th>
-                </tr>
-            </table>
+    <!-- Game lobby - shown before a game starts -->
+    <div id="gameLobby" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:80vh; gap:20px;">
+        <h2 style="color: var(--text-main);">Chess Master</h2>
+        <p style="color: var(--text-muted);">Welcome, {{ current_user.username }}!</p>
+        <div style="display:flex; gap:20px;">
+            <button id="createGameBtn" onclick="createGame()" class="quick-match-btn" style="width:200px; padding:15px; font-size:1rem;">
+                ⚡ Create Game
+            </button>
+            <button id="joinGameBtn" onclick="joinGame()" class="quick-match-btn" style="width:200px; padding:15px; font-size:1rem; background: linear-gradient(135deg, #10b981, #34d399);">
+                🎮 Join Game
+            </button>
+        </div>
+        <p id="lobbyStatus" style="color: var(--text-muted); font-size:0.9rem;"></p>
+    </div>
+
+    <!-- Game area - hidden until game starts -->
+    <main id="gameArea" style="display:none;">
+        <div style="text-align:center; padding:10px; color: var(--text-muted);">
+            <span id="gameStatus"></span>
+        </div>
+
+        <div class="main-layout" style="display: flex; justify-content: center; align-items: center;">
+            <div class="panel" style="padding: 40px; background-color: var(--bg-main); border: none;">
+             <div class="board-wrapper">
+                <div class="rank-labels" id="rankLabels">
+                    <span>8</span><span>7</span><span>6</span><span>5</span>
+                    <span>4</span><span>3</span><span>2</span><span>1</span>
+                </div>
+                <div class="board-container">
+                    <table id="ChessTable">
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                    </table>
+                    <div class="file-labels" id="fileLabels">
+                        <span>a</span><span>b</span><span>c</span><span>d</span>
+                        <span>e</span><span>f</span><span>g</span><span>h</span>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add this after the closing </div> of .main-layout -->
+        <div id="gameActions" style="display:flex; justify-content:center; gap:16px; padding:20px 0 32px;">
+            <button id="requestDrawBtn" onclick="requestDraw()" class="game-action-btn draw-btn">
+                🤝 Offer Draw
+            </button>
+            <button id="forfeitBtn" onclick="forfeitGame()" class="game-action-btn forfeit-btn">
+                🏳️ Forfeit
+            </button>
+        </div>
+
+        <!-- Draw offer modal -->
+        <div id="drawOfferModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9998; justify-content:center; align-items:center;">
+            <div style="background: var(--bg-panel); border-radius:16px; padding:36px 40px; text-align:center; border:1px solid var(--border-color); max-width:340px; width:90%;">
+                <h3 style="color:var(--text-main); margin-bottom:8px;">Draw Offered</h3>
+                <p style="color:var(--text-muted); margin-bottom:24px;">Your opponent is offering a draw. Do you accept?</p>
+                <div style="display:flex; gap:12px; justify-content:center;">
+                    <button onclick="respondDraw(true)" class="game-action-btn draw-btn" style="width:120px;">✓ Accept</button>
+                    <button onclick="respondDraw(false)" class="game-action-btn forfeit-btn" style="width:120px;">✕ Decline</button>
+                </div>
+            </div>
         </div>
     </main>
 
-    <button class="chat-toggle" id="chatToggleBtn" onclick="toggleChat()" title="Open Chat">💬</button>
+    <!-- Floating chat toggle button -->
+    <button class="chat-toggle" id="chatToggleBtn" onclick="toggleChat()" title="Open Chat" style="display:none;">💬</button>
 
+    <!-- Floating chatbox -->
     <div class="chat-panel hidden" id="chatPanel">
         <div class="chat-header">
             <span>Game Chat</span>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span class="chat-status">Opponent connected</span>
+                <span class="chat-status" id="opponentStatus">Waiting...</span>
                 <button onclick="toggleChat()" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer; padding:0;">✕</button>
             </div>
         </div>
@@ -68,10 +116,23 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    const currentUsername = "{{ current_user.username }}";
+        // Jinja variable - must stay in HTML
+        const currentUsername = "{{ current_user.username }}";
+        const currentUserId = {{ current_user.id }};
     </script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
     <script src="{{ url_for('static', filename='js/chatbox.js') }}"></script>
     <script src="{{ url_for('static', filename='js/chat-toggle.js') }}"></script>
+    
+        <!-- Game over overlay -->
+    <div id="gameOverOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background: var(--bg-panel); border-radius: 16px; padding: 40px; text-align:center; border: 1px solid var(--border-color);">
+            <h2 id="gameOverTitle" style="color: var(--text-main); font-size: 2rem; margin-bottom: 10px;"></h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Returning to home in 3 seconds...</p>
+            <button onclick="location.href='/'" class="quick-match-btn" style="width:200px; padding:12px; font-size:1rem;">Go Home</button>
+        </div>
+    </div>
+
 
 </body>
 </html>

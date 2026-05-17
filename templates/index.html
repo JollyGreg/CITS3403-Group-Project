@@ -39,20 +39,21 @@
 
     <main class="main-layout container-fluid">
         <div class="row g-4">
-            
+
+            <!-- Profile sidebar -->
             <div class="col-12 col-lg-3">
                 <aside class="panel" {% if current_user.is_authenticated %}onclick="location.href='{{ url_for('profile') }}'"{% endif %}>
                     <div class="profile-card">
                         <div class="avatar"></div>
                         {% if current_user.is_authenticated %}
                             <h2>{{ current_user.username }}</h2>
-                            <p class="text-muted" style="color: var(--text-muted);">Player ID: {{ current_user.id }}</p>
+                            <p style="color: var(--text-muted);">ELO: {{ current_user.elo_rating }}</p>
                         {% else %}
                             <h2>Guest Player</h2>
-                            <p class="text-muted" style="color: var(--text-muted);">Unranked</p>
+                            <p style="color: var(--text-muted);">Unranked</p>
                         {% endif %}
                     </div>
-                    
+
                     {% if current_user.is_authenticated %}
                         <div class="win-rate">
                             <div style="display: flex; justify-content: space-between;">
@@ -65,9 +66,16 @@
                                 <div class="progress-fill" style="width: {{ current_user.win_rate | default(0) }}%;"></div>
                             </div>
                         </div>
-                        
-                        <div style="margin-top: 20px;">
-                            <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">{{ current_user.matches_played | default(0) }}</span></p>
+                        <div style="margin-top: 20px; display: flex; gap: 16px;">
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                W <span style="color: var(--text-main);">{{ current_user.wins }}</span>
+                            </p>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                L <span style="color: var(--text-main);">{{ current_user.losses }}</span>
+                            </p>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                D <span style="color: var(--text-main);">{{ current_user.draws }}</span>
+                            </p>
                         </div>
                     {% else %}
                         <div class="win-rate">
@@ -79,7 +87,6 @@
                                 <div class="progress-fill" style="width: 0%; background: var(--border-color);"></div>
                             </div>
                         </div>
-                        
                         <div style="margin-top: 20px;">
                             <p style="color: var(--text-muted); font-size: 0.9rem;">Total Matches: <span style="color: var(--text-main);">0</span></p>
                         </div>
@@ -87,6 +94,7 @@
                 </aside>
             </div>
 
+            <!-- Play button -->
             <div class="col-12 col-lg-6">
                 <section class="panel">
                     {% if current_user.is_authenticated %}
@@ -94,66 +102,28 @@
                     {% else %}
                         <button class="quick-match-btn" onclick="toggleModal(); switchTab('login')">⚡ 1v1 Quick Match</button>
                     {% endif %}
-                    
-                    <div class="panel-title">Recent Championships</div>
-                    <div style="overflow-x: auto;">
-                        <table class="tournaments-table">
-                            <thead>
-                                <tr>
-                                    <th>Tournament Name</th>
-                                    <th>Entry</th>
-                                    <th>Players</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Spring Cup 2026</strong></td>
-                                    <td>Free</td>
-                                    <td>32/64</td>
-                                    <td><button class="join-btn">Join</button></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Beginner's Arena</strong></td>
-                                    <td>Free</td>
-                                    <td>12/128</td>
-                                    <td><button class="join-btn">Join</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </section>
             </div>
 
+            <!-- Leaderboard -->
             <div class="col-12 col-lg-3">
                 <aside class="panel">
                     <div class="panel-title">Global Leaderboard</div>
                     <ul class="leaderboard-list">
+                        {% for user in top_users %}
                         <li class="leaderboard-item">
-                            <div class="rank-num rank-1">1</div>
-                            <div class="player-info">User1</div>
-                            <div class="player-score">2882</div>
+                            <div class="rank-num {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">
+                                {{ loop.index }}
+                            </div>
+                            <div class="player-info">{{ user.username }}</div>
+                            <!-- Fixed: was user.wins, now shows ELO since leaderboard is sorted by ELO -->
+                            <div class="player-score">{{ user.elo_rating }}</div>
                         </li>
+                        {% else %}
                         <li class="leaderboard-item">
-                            <div class="rank-num rank-2">2</div>
-                            <div class="player-info">User2</div>
-                            <div class="player-score">2789</div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem;">No players yet!</div>
                         </li>
-                        <li class="leaderboard-item">
-                            <div class="rank-num rank-3">3</div>
-                            <div class="player-info">User3</div>
-                            <div class="player-score">2780</div>
-                        </li>
-                        <li class="leaderboard-item">
-                            <div class="rank-num">4</div>
-                            <div class="player-info">User4</div>
-                            <div class="player-score">2773</div>
-                        </li>
-                        <li class="leaderboard-item">
-                            <div class="rank-num">5</div>
-                            <div class="player-info">User5</div>
-                            <div class="player-score">2760</div>
-                        </li>
+                        {% endfor %}
                     </ul>
                 </aside>
             </div>
@@ -161,18 +131,20 @@
         </div>
     </main>
 
+    <!-- Login/Register modal -->
     <div id="loginModal" class="modal-overlay">
         <div class="glass-modal">
             <button class="close-btn" onclick="toggleModal()">&times;</button>
-            
+
             <div class="modal-tabs">
                 <span id="tab-login" class="active" onclick="switchTab('login')">Login</span>
                 <span id="tab-register" onclick="switchTab('register')">Register</span>
             </div>
 
             <form id="loginForm" class="auth-form active" method="POST" action="{{ url_for('login') }}">
-                {{ login_form.hidden_tag() }}  <div class="input-group">
-                    <input type="text" name="username" placeholder="Username" required>
+                {{ login_form.hidden_tag() }}
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="Username" value="{{ request.form.get('username', '') }}" required>
                 </div>
                 <div class="input-group">
                     <input type="password" name="password" placeholder="Password" required>
@@ -181,11 +153,12 @@
             </form>
 
             <form id="registerForm" class="auth-form" method="POST" action="{{ url_for('register') }}">
-                {{ register_form.hidden_tag() }} <div class="input-group">
-                    <input type="text" name="username" placeholder="Username" required>
+                {{ register_form.hidden_tag() }}
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="Username" value="{{ request.form.get('username', '') }}" required>
                 </div>
                 <div class="input-group">
-                    <input type="email" name="email" placeholder="Email Address" required>
+                    <input type="email" name="email" placeholder="Email Address" value="{{ request.form.get('email', '') }}" required>
                 </div>
                 <div class="input-group">
                     <input type="password" name="password" placeholder="Password" required>
@@ -198,14 +171,10 @@
         </div>
     </div>
 
-    <script>
+   <script>
         function toggleModal() {
             const modal = document.getElementById('loginModal');
-            if (modal.style.display === 'flex') {
-                modal.style.display = 'none';
-            } else {
-                modal.style.display = 'flex';
-            }
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
         }
 
         function switchTab(type) {
@@ -226,6 +195,16 @@
                 loginTab.classList.remove('active');
             }
         }
+
+        
+        // Receive the secret signal sent from the backend and automatically keep the pop-up window open.
+        {% if active_tab %}
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('loginModal');
+            modal.style.display = 'flex'; 
+            switchTab('{{ active_tab }}'); 
+        });
+        {% endif %}
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
