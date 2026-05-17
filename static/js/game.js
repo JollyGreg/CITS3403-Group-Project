@@ -189,3 +189,94 @@ function showGameOver(message) {
     overlay.style.display = 'flex';
     setTimeout(() => { location.href = '/'; }, 3000);
 }
+
+// ─── Forfeit ───────────────────────────────────────────────────────────────
+
+function forfeitGame() {
+    if (gameOver || !gameId) return;
+    const confirmed = confirm("Are you sure you want to forfeit? Your opponent will win.");
+    if (!confirmed) return;
+
+    disableGameActions();
+    const result = playerColour === 'white' ? 'black_win' : 'white_win';
+    socket.emit('end_game', {
+        game_id: gameId,
+        result,
+        winner: playerColour === 'white' ? 'black' : 'white'
+    });
+    gameOver = true;
+    showGameOver("You forfeited. Better luck next time!");
+}
+
+// ─── Draw request ──────────────────────────────────────────────────────────
+
+let drawOfferPending = false;   // we sent an offer, waiting for response
+let drawOfferReceived = false;  // we received an offer
+
+function requestDraw() {
+    if (gameOver || !gameId || drawOfferPending) return;
+    drawOfferPending = true;
+    document.getElementById('requestDrawBtn').disabled = true;
+    document.getElementById('requestDrawBtn').textContent = '🤝 Draw Offered...';
+    socket.emit('draw_offer', { game_id: gameId, from: currentUsername });
+}
+
+function respondDraw(accepted) {
+    document.getElementById('drawOfferModal').style.display = 'none';
+    drawOfferReceived = false;
+
+    socket.emit('draw_response', {
+        game_id: gameId,
+        accepted,
+        from: currentUsername
+    });
+
+    if (!accepted) return;
+
+    // Both agreed — end as draw locally (server handles the other side)
+    gameOver = true;
+    disableGameActions();
+    socket.emit('end_game', { game_id: gameId, result: 'draw', winner: null });
+    showGameOver("The game is a draw! Well played.");
+}
+
+function disableGameActions() {
+    const drawBtn = document.getElementById('requestDrawBtn');
+    const forfeitBtn = document.getElementById('forfeitBtn');
+    if (drawBtn) drawBtn.disabled = true;
+    if (forfeitBtn) forfeitBtn.disabled = true;
+}
+
+// ─── Draw socket events ────────────────────────────────────────────────────
+
+// Incoming draw offer from opponent
+socket.on('draw_offered', (data) => {
+    if (gameOver) return;
+    if (data.from === currentUsername) return;  // don't show to the person who sent it
+    drawOfferReceived = true;
+    document.getElementById('drawOfferModal').style.display = 'flex';
+});
+
+// Opponent responded to our draw offer
+socket.on('draw_responded', (data) => {
+    drawOfferPending = false;
+    const drawBtn = document.getElementById('requestDrawBtn');
+    if (drawBtn) {
+        drawBtn.disabled = false;
+        drawBtn.textContent = '🤝 Offer Draw';
+    }
+
+    if (data.accepted) {
+        gameOver = true;
+        disableGameActions();
+        showGameOver("Draw accepted! The game is a draw.");
+    } else {
+        // Brief visual feedback
+        if (drawBtn) {
+            drawBtn.textContent = '🤝 Draw Declined';
+            setTimeout(() => {
+                if (drawBtn) drawBtn.textContent = '🤝 Offer Draw';
+            }, 2500);
+        }
+    }
+});
