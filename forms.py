@@ -10,8 +10,8 @@ class LoginForm(FlaskForm):
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email Address', validators=[DataRequired(), Email()])
-    #Enable password complexity verification
     # Enable password complexity verification
+    
     password = PasswordField('Password', validators=[
         DataRequired(),
         Length(min=8, message='Password must be at least 8 characters long.'),
