@@ -5,11 +5,14 @@ The purpose of this application is to be a platform for users to play chess matc
 
 Users must create accounts to play so that their wins and loses can be kept track of for their elo score.
 
-### Group members
-- 24227223 - Liam Bush - "JollyGreg"
-- 24183532 - Jinghao Hu - "jinghao163"
-- 23982486 - Charlotte Stevens - "charlotte239"
-- 24445737 - Muhammad Afridi Ismail - "MUHAMMAD AFRIDI ISMAIL", "freddy_for_fun"
+## Group Members
+
+| UWA ID   | Name                   | GitHub Username          |
+| :---     | :---                   | :---                     |
+| 24227223 | Liam Bush              | JollyGreg                |
+| 24183532 | Jinghao Hu             | jinghao163               |
+| 23982486 | Charlotte Stevens      | charlotte239             |
+| 24445737 | Muhammad Afridi Ismail | freddy_for_fun           |
 
 
 ## Launching the application
@@ -41,6 +44,11 @@ source venv/bin/activate
 Once the virtual environment is activated (you should see (venv) in your terminal), install the required packages:
 ```bash
 pip install -r requirements.txt
+```
+### 5. Initialize the Database
+Before running the application, you must initialize the database:
+```bash
+python db.py
 ```
 ### 5. Run the Application
 Start the Flask local development server:
@@ -80,3 +88,39 @@ Unit Tests: Located in test_model.py, test_routes.py, and test_security.py. Thes
 Selenium Tests: Located in test_selenium.py. These run against a live version of the server (automatically handled by the live_server fixture in conftest.py) to verify UI components like modals and login flows.
 
 Note: Selenium tests run in headless mode by default, so no browser window will pop up during the automated process.
+
+## Main Features
+
+### Home Page & Leaderboard
+The home page dynamically changes based on user authentication. Guests are greeted with a login/registration modal, while logged-in users see their personalized win-rate statistics and a quick-match launcher. The right column displays a real-time Global Leaderboard based on ELO ratings.
+
+### Game Mode & Lobby
+* **Matchmaking:** Users can create a new game room or join an existing one waiting for an opponent.
+* **Real-time Gameplay:** The board is synchronized in real-time using WebSockets. 
+* **Move Validation:** Double validation ensures chess rules are strictly followed (both locally and on the server side).
+* **In-Game Chat:** A floating chatbox allows real-time communication between opponents during a match.
+
+### User Dashboard (Profile)
+Logged-in users can view their comprehensive match history, showing dates, opponents, playing color, ELO changes, and match results. 
+
+---
+
+## How The Website Works
+
+The project uses a strict Client-Server architecture. Flask connects the frontend Jinja templates with backend REST APIs and WebSocket events.
+
+HTML pages are stored in the `templates` folder and rely on Jinja2 for dynamic data rendering. A responsive layout is built utilizing Bootstrap 5. Forms are processed securely via Flask-WTF, utilizing CSRF tokens and secure password hashing. 
+
+Real-time interaction (chatting and making moves) is handled via `Flask-SocketIO`, enabling instant bidirectional communication between the client and the server. SQLAlchemy acts as the ORM, securely storing user accounts, match histories, and chat logs in a local SQLite database.
+
+---
+
+## Tools and Libraries Used
+
+* **Backend:** Flask, Flask-SQLAlchemy, Flask-Login, Flask-WTF, Flask-SocketIO
+* **Frontend:** HTML5, CSS3, Vanilla JavaScript, Bootstrap 5
+* **Database:** SQLite
+* **Testing:** Pytest, Selenium, Webdriver Manager
+
+---
+
