@@ -11,11 +11,12 @@ class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email Address', validators=[DataRequired(), Email()])
     #Enable password complexity verification
+    # Enable password complexity verification
     password = PasswordField('Password', validators=[
         DataRequired(),
         Length(min=8, message='Password must be at least 8 characters long.'),
-        Regexp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$',
-               message='Password must contain at least one letter, one number, and one special character (@$!%*#?&).')
+        Regexp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*#?&]).+$',
+               message='Password must contain at least one lowercase letter, one uppercase letter, and one special character (@$!%*#?&).')
     ])
     # Prevent user from entering inconsistent passwords twice
     confirm_password = PasswordField('Confirm Password', validators=[
