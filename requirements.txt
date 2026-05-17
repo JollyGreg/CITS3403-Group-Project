@@ -9,3 +9,5 @@ pytest
 pytest-flask
 selenium
 webdriver-manager
+flask-socketio
+eventlet

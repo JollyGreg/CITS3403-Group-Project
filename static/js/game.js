@@ -1,8 +1,9 @@
 let gameOver = false;
 let gameId = null;
 let playerColour = null;
-let pollInterval = null;
 let justMoved = false;
+
+const socket = io();
 
 //creates a new game and waits for an opponent to join
 function createGame() {
@@ -13,7 +14,8 @@ function createGame() {
             gameId = data.game_id;
             playerColour = 'white';
             document.getElementById('lobbyStatus').textContent = 'Waiting for opponent to join...';
-            pollInterval = setInterval(checkGameStatus, 2000);
+            // Join socket room while waiting so we receive opponent_joined event
+            socket.emit('join_game', { game_id: gameId });
         });
 }
 
@@ -33,18 +35,66 @@ function joinGame() {
         });
 }
 
-//checks if opponent has joined the waiting game
-function checkGameStatus() {
-    if (!gameId) return;
+//starts the game, shows the board and chat
+function startGame() {
+    document.getElementById('gameLobby').style.display = 'none';
+    document.getElementById('gameArea').style.display = 'block';
+    document.getElementById('chatToggleBtn').style.display = 'block';
+
+    loadChessboard('black');
+    loadChessboard('white');
+
+    window._currentTurn = 'white';
+
+    if (playerColour === 'black') {
+        flipBoardForBlack();
+    }
+
+    socket.emit('join_game', { game_id: gameId });
+    
+    //get initial state
     fetch(`/api/game/${gameId}/state`)
         .then(r => r.json())
         .then(data => {
-            if (data.status === 'active') {
-                clearInterval(pollInterval);
-                startGame();
-            }
+            window._currentTurn = data.current_turn;
+            updateGameStatus(data);
         });
 }
+
+// Listen for board updates from server via websocket
+socket.on('board_update', (data) => {
+    window._currentTurn = data.current_turn;
+    updateGameStatus(data);
+    if (!justMoved) {
+        applyBoardState(data.board_state);
+        if (playerColour === 'black') {
+            flipBoardForBlack();
+        }
+    }
+    justMoved = false;
+});
+
+// Listen for game over
+socket.on('game_over', (data) => {
+    if (!gameOver) {
+        gameOver = true;
+        showGameOver(data.message);
+    }
+});
+
+// Listen for new messages
+socket.on('new_message', (data) => {
+    if (data.sender !== currentUsername) {
+        addMessage(data.content, data.sender, false);
+    }
+});
+
+// Listen for opponent joining the game
+socket.on('opponent_joined', (data) => {
+    if (data.game_id === gameId) {
+        startGame();
+    }
+});
 
 function flipBoardForBlack() {
     const table = document.getElementById('ChessTable');
@@ -62,62 +112,6 @@ function flipBoardForBlack() {
     const fileLabels = document.getElementById('fileLabels');
     fileLabels.innerHTML = '<span>h</span><span>g</span><span>f</span><span>e</span><span>d</span><span>c</span><span>b</span><span>a</span>';
 
-}
-
-//starts the game - shows the board and chat
-function startGame() {
-    document.getElementById('gameLobby').style.display = 'none';
-    document.getElementById('gameArea').style.display = 'block';
-    document.getElementById('chatToggleBtn').style.display = 'block';
-
-    //load the chessboard pieces
-    loadChessboard('black');
-    loadChessboard('white');
-
-    //set initial turn to white
-    window._currentTurn = 'white';
-
-    // Flip board if playing as black
-    if (playerColour === 'black') {
-        flipBoardForBlack();
-    }
-
-    //fetch initial game state immediately
-    pollGameState();
-
-    //start polling for game state and messages every 2 seconds
-    setInterval(pollGameState, 2000);
-    if (typeof pollMessages === 'function') {
-        setInterval(pollMessages, 2000);
-    }
-}
-
-//polls the server for the latest game state
-function pollGameState() {
-    if (!gameId) return;
-    fetch(`/api/game/${gameId}/state`)
-        .then(r => r.json())
-        .then(data => {
-            //update turn tracker
-            window._currentTurn = data.current_turn;
-            updateGameStatus(data);
-            //if game is finished redirect to home
-            if (data.status === 'finished') {
-                if (!gameOver) {
-                    gameOver = true;
-                    showGameOver('Game over!');
-                }
-                return;
-            }
-            //only apply board state if opponent moved (not after our own move)
-            if (data.board_state && !justMoved) {
-                applyBoardState(data.board_state);
-                if (playerColour === 'black') {
-                    flipBoardForBlack();
-                }
-            }
-            justMoved = false;
-        });
 }
 
 //updates the turn indicator and opponent status in the UI

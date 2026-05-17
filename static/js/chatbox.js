@@ -28,38 +28,18 @@ function addMessage(text, sender, isSelf) {
     scrollToBottom();
 }
 
-//polls server for new messages since last check
-function pollMessages() {
-    if (!gameId) return;
-    fetch(`/api/game/${gameId}/messages`)
-        .then(r => r.json())
-        .then(msgs => {
-            if (msgs.length > lastMessageCount) {
-                msgs.slice(lastMessageCount).forEach(m => {
-                    const isSelf = m.sender === currentUsername;
-                    if (!isSelf) {
-                        addMessage(m.content, m.sender, false);
-                    }
-                });
-                lastMessageCount = msgs.length;
-            }
-        })
-        .catch(err => console.log('Poll error:', err));
-}
-
 //sends a message to the server
 function sendMessage() {
     const text = chatInput.value.trim();
     if (!text || !gameId) return;
     chatInput.value = '';
-    //show your own message immediately
     addMessage(text, currentUsername, true);
-    lastMessageCount++;
-    fetch(`/api/game/${gameId}/message`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: text })
-    }).catch(err => console.log('Send error:', err));
+    socket.emit('send_message', {
+        game_id: gameId,
+        sender: currentUsername,
+        sender_id: currentUserId,
+        content: text
+    });
 }
 
 sendButton.addEventListener('click', sendMessage);

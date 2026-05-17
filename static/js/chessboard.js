@@ -1,3 +1,5 @@
+let dragInProgress = false;
+
 var chesspieces = {
     "Pawn": {
         "white": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Chess_plt45.svg/60px-Chess_plt45.svg.png",
@@ -472,13 +474,21 @@ function dragstartHandler(event) {
     return;
     } 
 
+    dragInProgress = true;
+
     // event.target is the <img>
     dragged = event.target;
-    const cell = dragged.parentElement;
+
+    // Handle case where drag fires on TD instead of IMG
+    const fromCell = dragged.tagName === 'TD' ? dragged : dragged.parentElement;
+    if (!fromCell || fromCell.tagName !== 'TD') {
+        dragged = null;
+        return;
+    }  
         
     //in a multiplayer game, only allow moving your own colour
     if (playerColour && gameId) {
-        if (cell.getAttribute("piece-color") !== playerColour) {
+        if (fromCell.getAttribute("piece-color") !== playerColour) {
             event.preventDefault();
             dragged = null;
             return;
@@ -491,8 +501,8 @@ function dragstartHandler(event) {
     }
 
     console.log(
-        "Picked up:", cell.getAttribute("piece-type"),
-        "at", getPositionFromCell(cell.cellIndex, cell.parentNode.rowIndex)
+        "Picked up:", fromCell.getAttribute("piece-type"),
+        "at", getPositionFromCell(fromCell.cellIndex, fromCell.parentNode.rowIndex)
     );
     event.dataTransfer.effectAllowed = "move";
 }
@@ -511,24 +521,26 @@ function dropHandler(event) {
     if (chessGameOver) {
     event.preventDefault();
     dragged = null;
+    dragInProgress = false;
     return;
     }
 
-     console.log('playerColour:', playerColour, 'gameId:', gameId);
     // Check if it's this player's turn
     if (playerColour && gameId) {
         if (window._currentTurn !== playerColour) {
             console.log("Not your turn!");
             dragged = null;
+            dragInProgress = false;
             return;
         }
     }    
     event.preventDefault();
     if (!dragged) return;
 
-    const fromCell = dragged.parentElement;
-    if (!fromCell) {
+    const fromCell = dragged.tagName === 'TD' ? dragged : dragged.parentElement;
+    if (!fromCell || fromCell.tagName !== 'TD') {
         dragged = null;
+        dragInProgress = false;
         return;
     }
     // The drop target might be a <td> or another <img> sitting in a <td>
@@ -544,6 +556,7 @@ function dropHandler(event) {
     if (gameId && pieceColor !== playerColour) {
         console.log("That's not your piece!");
         dragged = null;
+        dragInProgress = false;
         return;
     }
 
@@ -556,6 +569,7 @@ function dropHandler(event) {
     if (!isValid) {
         console.log("Invalid move to", toPos);
         dragged = null;
+        dragInProgress = false;
         return;
     }
     const movingColor = fromCell.getAttribute("piece-color");
@@ -622,10 +636,10 @@ if (toState.type) {
 if (leavesKingInCheck) {
     alert("You cannot make a move that leaves your king in check.");
     dragged = null;
+    dragInProgress = false;
     return;
 }
 
-    console.log("Moving", fromCell.getAttribute("piece-type"), "from", fromPos, "to", toPos);
     // Save what was on the destination cell BEFORE moving
     const capturedType = toCell.getAttribute('piece-type');
 
@@ -655,7 +669,6 @@ if (leavesKingInCheck) {
     fromCell.removeAttribute("piece-color");
     fromCell.removeAttribute("draggable");
     fromCell.removeAttribute("moved");
-    fromCell.replaceWith(fromCell.cloneNode(false)); // removes old event listeners
     currentTurn = currentTurn === "white" ? "black" : "white";
     console.log("Current turn:", currentTurn);
 
@@ -669,49 +682,50 @@ if (leavesKingInCheck) {
 
     clearHighlights();
 
+    // Re-attach mouse events to all cells with pieces
+    Array.from(document.getElementById('ChessTable').rows).forEach(row => {
+        Array.from(row.cells).forEach(cell => {
+            if (cell.getAttribute('piece-type')) {
+                cell.addEventListener('mouseenter', mouseEnter);
+                cell.addEventListener('mouseleave', mouseLeave);
+                const img = cell.querySelector('img');
+                if (img) img.addEventListener('dragstart', dragstartHandler);
+            }
+        });
+    });
+
     // If king was captured end the game
     if (capturedType === 'King') {
         if (gameId) {
             const boardState = captureBoardState();
-            fetch(`/api/game/${gameId}/move`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ board_state: boardState })
-            })
-            .then(() => fetch(`/api/game/${gameId}/end`, { method: 'POST' }))
-            .then(() => {
-                showGameOver(`Game over! ${playerColour} wins!`);
-            });
+            socket.emit('make_move', { game_id: gameId, board_state: boardState });
+            socket.emit('end_game', { game_id: gameId, winner: playerColour });
+            showGameOver(`Game over! ${playerColour} wins!`);
         }
         dragged = null;
+        dragInProgress = false;
         return;
     }
 
     // Send board state to server after a valid move
     if (gameId) {
         const boardState = captureBoardState();
-        fetch(`/api/game/${gameId}/move`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ board_state: boardState })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                window._currentTurn = data.current_turn;
-                currentTurn = data.current_turn; // keep local in sync
-                justMoved = true;
-            }
-        });
+        socket.emit('make_move', { game_id: gameId, board_state: boardState });
+        justMoved = true;
     }
 
     dragged = null;
+    dragInProgress = false;
 }
 
 // ─── Board setup ─────────────────────────────────────────────────────────────
 
 function addDragFunctionality(table) {
-    // Use event delegation on the table instead of individual cells
+    if (table._dragListenersAdded) return;
+    table._dragListenersAdded = true;
+    table.addEventListener("dragstart", (e) => {
+        dragstartHandler(e);
+    });
     table.addEventListener("dragover", (e) => { 
         e.preventDefault(); 
         dragoverHandler(e); 
@@ -780,6 +794,7 @@ function captureBoardState() {
 }
 
 setInterval(() => {
+    if (dragInProgress) return;
     const table = document.getElementById("ChessTable");
 
     if (!table || chessGameOver) return;
