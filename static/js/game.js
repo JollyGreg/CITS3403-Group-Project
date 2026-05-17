@@ -70,6 +70,9 @@ socket.on('board_update', (data) => {
         if (playerColour === 'black') {
             flipBoardForBlack();
         }
+        if (typeof showCheckMessageForCurrentTurn === 'function') {
+            showCheckMessageForCurrentTurn();
+        }
     }
     justMoved = false;
 });

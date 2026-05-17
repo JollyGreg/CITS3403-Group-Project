@@ -307,6 +307,21 @@ function checkGameEndState() {
     
 }
 
+function showCheckMessageForCurrentTurn() {
+    if (chessGameOver) return;
+
+    const turnToCheck = window._currentTurn || currentTurn;
+    if (!turnToCheck) return;
+
+    if (
+        isKingInCheck(turnToCheck) &&
+        !isCheckmate(turnToCheck) &&
+        !isStalemate(turnToCheck)
+    ) {
+        showGameMessage(turnToCheck + " king is in check!");
+    }
+}
+
 // Checks whether a square is on the board
 function inBounds(pos) {
     const colIdx = getIntOfAlpha(pos[0]);
